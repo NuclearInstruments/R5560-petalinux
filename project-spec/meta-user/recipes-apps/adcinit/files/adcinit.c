@@ -59,7 +59,13 @@
 
 #define MAX_ERRORBIT 0
 
+#define DAEMON_MODE 1
+
 #include <stdio.h>
+
+#include <linux/i2c-dev.h>
+#include <fcntl.h>
+#include <termios.h>
 
 
 #include <stdio.h>
@@ -82,9 +88,16 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/ioctl.h>
-
+#include <signal.h>
+#include <syslog.h>
 #define PAGE_SIZE ((size_t)getpagesize())
 #define PAGE_MASK ((uint64_t)(long)~(PAGE_SIZE - 1))
+
+#ifdef DAEMON_MODE
+#define __PRINT_LOG(...) syslog (LOG_NOTICE,__VA_ARGS__)
+#else
+#define __PRINT_LOG(...) printf (__VA_ARGS__)
+#endif
 
 bool DO_ADC_TEST=false;
 int LEN_ADC_TESTms=10;
@@ -99,16 +112,130 @@ int  PerformTestRamp(int fd, int channel);
 int WriteReg(int fd, uint32_t address, uint32_t v);
 int ReadReg(int fd, uint32_t address, uint32_t *v);
 int ADCCalibration();
+int iic_sys;
+void iicPortExpanderLedWrite(uint8_t address, uint8_t int_address, uint8_t data);
+uint8_t iicPortExpanderLedRead(uint8_t address, uint8_t int_address);
+
+void BlinkCalibLed();
+void ONCalibLedKO();
+void ONCalibLedOK();
+void ONValidFWLedKO();
+void ONValidFWLedOK();
+
+
+int fd;
 
 int main(int argc, char **argv)
 {
+    int old_value;
+    int cached = 0;
+    printf("STARTING ADC INIT DAEMON\n");
+#ifdef DAEMON_MODE   
+   pid_t pid;
+
+    /* Fork off the parent process */
+    pid = fork();
+
+    /* An error occurred */
+    if (pid < 0)
+        exit(EXIT_FAILURE);
+
+    /* Success: Let the parent terminate */
+    if (pid > 0)
+        exit(EXIT_SUCCESS);
+
+    /* On success: The child process becomes session leader */
+    if (setsid() < 0)
+        exit(EXIT_FAILURE);
+
+    /* Catch, ignore and handle signals */
+    //TODO: Implement a working signal handler */
+    signal(SIGCHLD, SIG_IGN);
+    signal(SIGHUP, SIG_IGN);
+
+    /* Fork off for the second time*/
+    pid = fork();
+
+    /* An error occurred */
+    if (pid < 0)
+        exit(EXIT_FAILURE);
+
+    /* Success: Let the parent terminate */
+    if (pid > 0)
+        exit(EXIT_SUCCESS);
+
+    /* Set new file permissions */
+    umask(0);
+
+    /* Change the working directory to the root directory */
+    /* or another appropriated directory */
+    chdir("/");
+
+    /* Close all open file descriptors */
+    int x;
+    for (x = sysconf(_SC_OPEN_MAX); x>=0; x--)
+    {
+        close (x);
+    }
+
+    /* Open the log file */
+    openlog ("firstdaemon", LOG_PID, LOG_DAEMON);
+#endif    
+    iic_sys = open("/dev/i2c-0", O_RDWR);
+
+    iicPortExpanderLedWrite(0x20,3,0);
+    iicPortExpanderLedWrite(0x20,1,0xFF);
+    /*
 	if (argc==2)
 	{
 		DO_ADC_TEST = true;
 		LEN_ADC_TESTms = atoi(argv[1]);  
-	}
+	}*/
 
-    ADCCalibration();
+    fd = open("/dev/mem", O_RDWR|(!cached ? O_SYNC : 0));
+    if (fd < 0) {
+        printf("open(/dev/mem) failed (%d)\n", errno);
+        return 1;
+    }
+    
+    while(1)
+    {
+        uint32_t check1, check2;
+        check1=0;
+        ReadReg(fd, 0x43c0003c, &check1);
+        if (check1==0xFFFFABBA)
+        {
+            ONValidFWLedOK();
+            ReadReg(fd, 0x43c00010, &check2);            
+            if (check2==0xABBA0000)
+            {
+                    ONCalibLedKO();            
+            }
+            else
+            {
+                if (check2==0xABBA1234)
+                {
+                    ONCalibLedOK();
+                }
+                else
+                {
+                    if (ADCCalibration()==0)            
+                        WriteReg(fd, 0x43c00010, 0xABBA1234);                            
+                    else
+                        WriteReg(fd, 0x43c00010, 0xABBA0000);                            
+                }
+            }
+        }
+        else
+        {
+            ONValidFWLedKO();
+        }
+
+        usleep(100000);
+    }
+
+
+	close(fd);
 
     return 0;
 }
@@ -151,7 +278,7 @@ int countErrors(int fd, int AB, int inttime)
 	int err_cnt=0;
 	uint32_t data;
 //	int ADDR = (AB==0 ? ADC_CAL_REG_SIG_A : ADC_CAL_REG_SIG_B);
-	usleep(1000);
+	usleep(100);
 	WriteReg(fd, ADC_CAL_BA+ ADC_CAL_REG_ERRRESET, 0);
 	WriteReg(fd, ADC_CAL_BA+ ADC_CAL_REG_ERRRESET, 1);
 	WriteReg(fd, ADC_CAL_BA+ ADC_CAL_REG_ERRRESET, 0);
@@ -270,16 +397,16 @@ int  PerformTestRamp(int fd, int channel)
 
 		if (i%32)
 		{
-			printf("Progress: %3.2f%%\r",i/16384.0*100.0);
+			__PRINT_LOG("Progress: %3.2f%%\r",i/16384.0*100.0);
 			fflush(stdout);
 		}
 		if(err_cnt>0)
 		{
-			printf("\n\rRAMP: %2d %4X[%4X] %d\n\r",channel, i, dato, err_cnt);	
+			__PRINT_LOG("\n\rRAMP: %2d %4X[%4X] %d\n\r",channel, i, dato, err_cnt);	
 			TR++;
 		}
 	}
-			printf("\n\r");
+			__PRINT_LOG("\n\r");
 	return TR;
 }
 
@@ -291,52 +418,48 @@ void ChannelSelect(int fd, int ch, int AB)
 
 int ADCCalibration()
 {
-	int fd;
+
 	int i,j;
 	int ch_sel;
 	int ab=0;
 	int chh;
-    int cached = 0;
+
 	uint32_t data;
 	int err_cnt=0;
 	int delay;
-	printf("**************************************************\n");
-	printf("*                                                *\n");
-	printf("*			ADC CALIBRATION PROCEDURE	    	 *\n");
-	printf("*                                                *\n");
-	printf("**************************************************\n");
-	printf("opening /dev/mem\n");
+	__PRINT_LOG("**************************************************\n");
+	__PRINT_LOG("*                                                *\n");
+	__PRINT_LOG("*			ADC CALIBRATION PROCEDURE	    	 *\n");
+	__PRINT_LOG("*                                                *\n");
+	__PRINT_LOG("**************************************************\n");
+	__PRINT_LOG("opening /dev/mem\n");
 
 
-	printf("Start Acquisiton Function (IN)\n");
+	__PRINT_LOG("Start Acquisiton Function (IN)\n");
 	rollin=5;
 
-    fd = open("/dev/mem", O_RDWR|(!cached ? O_SYNC : 0));
-    if (fd < 0) {
-        fprintf(stderr, "open(/dev/mem) failed (%d)\n", errno);
-        return 1;
-    }
+
 
 
 	//RESET ADC
 	ADCSPIWrite(fd,0x000018);		
 	ADCSPIWrite(fd,0x00001C);		
-	usleep(100000);	
+	usleep(10000);	
 	ADCSPIWrite(fd,0x000018);		
-	usleep(100000);	
+	usleep(10000);	
 
 	ADCSPIWrite(fd,0x000800);		
 	ADCSPIWrite(fd,0x000803);		
-	usleep(100000);	
+	usleep(10000);	
 	ADCSPIWrite(fd,0x000800);		
-	usleep(100000);	
+	usleep(10000);	
 
 	WriteReg(fd, ADC_CAL_BA+ ADC_CAL_RESET, 0x3);
 	usleep(1000);
 	WriteReg(fd, ADC_CAL_BA+ ADC_CAL_RESET, 0x1);
 	usleep(1000);
 	WriteReg(fd, ADC_CAL_BA+ ADC_CAL_RESET, 0x0);
-	usleep(100000);
+	usleep(10000);
 	for (i=0;i<64;i++)
 	{
 		channelAlligned[i] =false;
@@ -357,7 +480,7 @@ AlgndCNTERR:
 	ADCSPIWrite(fd,0x001BCC);
 	ADCSPIWrite(fd,0x001CCC);
 
-	usleep(100000);
+	usleep(10000);
 
 	//Program pattern matching pattern
 	WriteReg(fd, ADC_CAL_BA+ ADC_CAL_REG_PM_A, 0x55AA);
@@ -365,14 +488,24 @@ AlgndCNTERR:
 
 //	ch_sel=0;
 
-	printf("Starting bit delay calibration...\n");
+	__PRINT_LOG("Starting bit delay calibration...\n");
 
 
 	for (ch_sel=0;ch_sel<32;ch_sel++)
 	{
+        uint32_t check1;
+
+	
+    		BlinkCalibLed();
 		for (ab=0;ab<2;ab++)
 		{
 		
+	        ReadReg(fd, 0x43c0003c, &check1);
+            if (check1!=0xFFFFABBA)
+            {
+                return -1;
+            }		
+
 		if (channelAlligned[(ch_sel*2)+ab] ==false)
 		{
 			ChannelSelect(fd, ch_sel, ab);
@@ -385,15 +518,15 @@ AlgndCNTERR:
 				for (i=0;i<32;i++)
 				{
 					SetDelay(fd,i);
-					err_cnt = countErrors(fd, ab, 5+try*30);
+					err_cnt = countErrors(fd, ab, 1+try*5);
 					ScanWin[i] = err_cnt;
 					data=ReadData(fd, ab);	
-					//printf("    -> %2d    %d\n",i,err_cnt);
-					printf("[->] CH: %2d%s Delay: %d Error: %6d Code:%2X                      \r",ch_sel, ab==0?"A":"B", i, err_cnt, data);
+					//__PRINT_LOG("    -> %2d    %d\n",i,err_cnt);
+					__PRINT_LOG("[->] CH: %2d%s Delay: %d Error: %6d Code:%2X                      \r",ch_sel, ab==0?"A":"B", i, err_cnt, data);
 					fflush(stdout);
 				}
 			
-				printf("\n0|");				
+				__PRINT_LOG("\n0|");				
 				int lstartM=0;
 				int lendM=0;
 				int lw=0;
@@ -402,10 +535,10 @@ AlgndCNTERR:
 				bool llb = false;
 				for (i=0;i<32;i++)
 				{
-					if (i==15)printf(" ");
+					if (i==15)__PRINT_LOG(" ");
 					if (ScanWin[i]==0)
 					{
-						printf(".");
+						__PRINT_LOG(".");
 						if (llb==false)
 						{
 							llstart=i;
@@ -417,7 +550,7 @@ AlgndCNTERR:
 					}
 					else
 					{
-						printf("#");
+						__PRINT_LOG("#");
 						if (llb==true)
 						{
 							if (llw>lw)
@@ -441,7 +574,7 @@ AlgndCNTERR:
 					}
 				}
 
-				printf("|31\n");				
+				__PRINT_LOG("|31\n");				
 
 			if (lendM - lstartM>10)
 			{
@@ -458,14 +591,14 @@ AlgndCNTERR:
 //
 //			delay = 5;
 			SetDelay(fd,delay);
-			err_cnt = countErrors(fd, ab, 250);
+			err_cnt = countErrors(fd, ab, 25);
 
 			channelBitDelay[(ch_sel*2)+ab] = delay;
 			channelLockedBit[(ch_sel*2)+ab] = err_cnt>MAX_ERRORBIT?false:true;
 
 				if (channelLockedBit[(ch_sel*2)+ab] == false)
 				{
-					printf ("   --> [%x] --> delay found: %2d    error@delay: %8d  [MIN:%2d   MAX:%2d    W:%2d]\n",delay,err_cnt, lstartM,lendM,lw);
+					__PRINT_LOG ("   --> [%x] --> delay found: %2d    error@delay: %8d  [MIN:%2d   MAX:%2d    W:%2d]\n",delay,err_cnt, lstartM,lendM,lw);
 
 					if (try < 5)
 					{
@@ -476,7 +609,7 @@ AlgndCNTERR:
 
 				
 
-			printf("CH: %2d%s Delay: %d LOCKED: %s  [MIN:%2d   MAX:%2d    W:%2d]                           \r\n",ch_sel, ab==0?"A":"B", delay, channelLockedBit[(ch_sel*2)+ab]?"Y":"F",lstartM,lendM,lw);
+			__PRINT_LOG("CH: %2d%s Delay: %d LOCKED: %s  [MIN:%2d   MAX:%2d    W:%2d]                           \r\n",ch_sel, ab==0?"A":"B", delay, channelLockedBit[(ch_sel*2)+ab]?"Y":"F",lstartM,lendM,lw);
 
 		}
 		}
@@ -485,23 +618,24 @@ AlgndCNTERR:
 
 	int notAllignedCNT=0;
 
-	printf("Bit delay calibration completed...\n");
+	__PRINT_LOG("Bit delay calibration completed...\n");
 
-	usleep(100000);
-	printf("Starting bitslip word alignment...\n");
+	usleep(10000);
+	__PRINT_LOG("Starting bitslip word alignment...\n");
 
 	ADCSPIWrite(fd,0x002134);		//mobalità bitwise
 	ADCSPIWrite(fd,0x0019F0);
 	ADCSPIWrite(fd,0x001AF0);
 	ADCSPIWrite(fd,0x001BF0);
 	ADCSPIWrite(fd,0x001CF0);
-	usleep(100000);
+	usleep(10000);
 
 	WriteReg(fd, ADC_CAL_BA+ ADC_CAL_REG_PM_A, 0xF0F0);
 	WriteReg(fd, ADC_CAL_BA+ ADC_CAL_REG_PM_B, 0xF0F0);
 
 	for (ch_sel=0;ch_sel<32;ch_sel++)
 	{
+    	BlinkCalibLed();
 		for (ab=0;ab<2;ab++)
 		{
 			channelAlligned[(ch_sel*2)+ab] =false;
@@ -513,7 +647,7 @@ AlgndCNTERR:
 				DoBitslip(fd);
 				err_cnt = countErrors(fd, ab, 1);//countAlignError(fd, ab);	
 				data=ReadData(fd, ab);	
-				printf("[B] CH: %2d%s Bitslip: %d CODE: %2X                      \r",ch_sel, ab==0?"A":"B", i, data);
+				__PRINT_LOG("[B] CH: %2d%s Bitslip: %d CODE: %2X                      \r",ch_sel, ab==0?"A":"B", i, data);
 				fflush(stdout);
 
 				if (err_cnt==0)
@@ -526,7 +660,7 @@ AlgndCNTERR:
 			if(channelAlligned[(ch_sel*2)+ab] ==false)
 				notAllignedCNT++;
 
-			printf("\n[B] CH: %2d%s BITSLIP: %d ALLIGNED: %s\r\n",ch_sel, ab==0?"A":"B", channelBitslipN[(ch_sel*2)+ab], channelAlligned[(ch_sel*2)+ab] == true ? "Y":"N");
+			__PRINT_LOG("\n[B] CH: %2d%s BITSLIP: %d ALLIGNED: %s\r\n",ch_sel, ab==0?"A":"B", channelBitslipN[(ch_sel*2)+ab], channelAlligned[(ch_sel*2)+ab] == true ? "Y":"N");
 
 		}
 
@@ -534,34 +668,37 @@ AlgndCNTERR:
 
 		if (notAllignedCNT>0)
 			goto AlgndCNTERR;
-	printf("Calibration process completed...\n");
 
-	printf("------------------------------------------------ \n");
-	printf("| CH   | BIT LOCKED | DELAY  | ALIGNED | SHIFT | \n");
+   	ONCalibLedOK();			
+	__PRINT_LOG("Calibration process completed...\n");
+
+	__PRINT_LOG("------------------------------------------------ \n");
+	__PRINT_LOG("| CH   | BIT LOCKED | DELAY  | ALIGNED | SHIFT | \n");
 	for (i=0;i<64;i++)
-	printf("| %2d%s  |     %s      |   %2d   |    %s    |   %2d  | \n", i/2, i%2==0?"A":"B", channelLockedBit[i]== true ? "Y":"N", channelBitDelay[i], channelAlligned[i] == true ? "Y":"N", channelBitslipN[i]);
-	printf("------------------------------------------------ \n");
+	__PRINT_LOG("| %2d%s  |     %s      |   %2d   |    %s    |   %2d  | \n", i/2, i%2==0?"A":"B", channelLockedBit[i]== true ? "Y":"N", channelBitDelay[i], channelAlligned[i] == true ? "Y":"N", channelBitslipN[i]);
+	__PRINT_LOG("------------------------------------------------ \n");
 
 	ADCSPIWrite(fd,0x000D00);		//pattern mode: custom
 
-	printf("ADC Enabled...\n");
+	__PRINT_LOG("ADC Enabled...\n");
 
 	if (DO_ADC_TEST==true)
 	{
 		int CH_ERROR[32];
 		for (i=0;i<32;i++)
 		{
-			printf("- performing RAMP test on channel: %d\n",i);
+			__PRINT_LOG("- performing RAMP test on channel: %d\n",i);
 			CH_ERROR[i] = PerformTestRamp(fd,i);
 		}
-		printf("------------------------------------------------ \n");
-		printf("| CH   | TEST PASS  |  ERRORS  |       |       | \n");
+		__PRINT_LOG("------------------------------------------------ \n");
+		__PRINT_LOG("| CH   | TEST PASS  |  ERRORS  |       |       | \n");
 		for (i=0;i<32;i++)
-		printf("| %2d    |     %s      | %8d|        |        | \n", i, CH_ERROR[i] ==0 ? "Y":"N", CH_ERROR[i]);
-		printf("------------------------------------------------ \n");
+		__PRINT_LOG("| %2d    |     %s      | %8d|        |        | \n", i, CH_ERROR[i] ==0 ? "Y":"N", CH_ERROR[i]);
+		__PRINT_LOG("------------------------------------------------ \n");
 
 	}
-	close(fd);
+
+    return 0;
 
 }
 
@@ -579,15 +716,15 @@ int WriteReg(int fd, uint32_t address, uint32_t v)
 
     base = offset & PAGE_MASK;
     offset &= ~PAGE_MASK;
-//printf("write reg %x value: %d\n", address, value);
+//__PRINT_LOG("write reg %x value: %d\n", address, value);
 
     mm = mmap(NULL, PAGE_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, base);
     if (mm == MAP_FAILED) {
-        fprintf(stderr, "mmap64(0x%x@0x%lx) failed (%d)\n",
+        __PRINT_LOG("mmap64(0x%x@0x%lx) failed (%d)\n",
                 PAGE_SIZE, base, errno);
         return 1;
     }
-//printf("map ok\n");
+//__PRINT_LOG("map ok\n");
     *(volatile uint32_t *)(mm + offset) = value;
     munmap((void *)mm, PAGE_SIZE);
 	return 0;
@@ -603,17 +740,79 @@ int ReadReg(int fd, uint32_t address, uint32_t *v)
     base = offset & PAGE_MASK;
     offset &= ~PAGE_MASK;
 
-//printf("read reg %x base:%x offset:%d\n", address, base, offset);
+//__PRINT_LOG("read reg %x base:%x offset:%d\n", address, base, offset);
 
     mm = mmap(NULL, PAGE_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, base);
     if (mm == MAP_FAILED) {
-        fprintf(stderr, "mmap64(0x%x@0x%lx) failed (%d)\n",
+       __PRINT_LOG("mmap64(0x%x@0x%lx) failed (%d)\n",
                 PAGE_SIZE, base, errno);
         return 1;
     }
-//printf("map ok\n");
+//__PRINT_LOG("map ok\n");
     *v = *(volatile uint32_t *)(mm + offset);
     munmap((void *)mm, PAGE_SIZE);
 	return 0;
 }
 
+
+
+void iicPortExpanderLedWrite(uint8_t address, uint8_t int_address, uint8_t data)
+{
+	uint8_t value[2];
+	if (ioctl(iic_sys, I2C_SLAVE, address) < 0) {
+		__PRINT_LOG("iic_disp_erorr_on_write byte\n");
+	}
+		else
+		{
+			value[0] = int_address;
+			value[1] = data;
+			write(iic_sys, value, 2);
+		}
+}
+
+uint8_t iicPortExpanderLedRead(uint8_t address, uint8_t int_address)
+{
+	uint8_t value[2];
+	if (ioctl(iic_sys, I2C_SLAVE, address) < 0) {
+		__PRINT_LOG("iic_disp_erorr_on_write byte\n");
+	}
+		else
+		{
+			value[0] = int_address;
+            write(iic_sys, value, 1);
+            read(iic_sys, value, 1);
+            return value[0];
+		}
+		
+	return 0;
+}
+
+
+void BlinkCalibLed()
+{
+    iicPortExpanderLedWrite(0x20,0x1,    iicPortExpanderLedRead(0x20,0x1) ^ 0x80);
+}
+
+
+void ONCalibLedKO()
+{
+    iicPortExpanderLedWrite(0x20,0x1,    iicPortExpanderLedRead(0x20,0x1) | 0x80);    
+}
+
+void ONCalibLedOK()
+{
+    iicPortExpanderLedWrite(0x20,0x1,    iicPortExpanderLedRead(0x20,0x1) & (0x7F));
+}
+
+
+void ONValidFWLedKO()
+{
+    uint8_t data = iicPortExpanderLedRead(0x20,0x1);
+    data = data | 0x40;
+    iicPortExpanderLedWrite(0x20,0x1, data);    
+}
+
+void ONValidFWLedOK()
+{
+    iicPortExpanderLedWrite(0x20,0x1,    iicPortExpanderLedRead(0x20,0x1) & (0xBF));
+}

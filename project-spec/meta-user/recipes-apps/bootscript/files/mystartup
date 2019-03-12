@@ -1,0 +1,63 @@
+#!/bin/sh
+
+echo Nuclear Instruments R5560 Startup
+
+
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:           load-config
+# Required-Start      
+# Required-Stop       
+# Default-Start       S
+# Default-Stop:       
+# Short-Description:  Startup
+### END INIT INFO
+
+S=/mnt/sdcard
+D=/etc/yourapplication
+C=startup.sh
+
+if [ "$1" != "start" ]; then
+    exit 0
+fi
+
+# create directories/files
+mkdir -p ${S}
+mkdir -p ${D}
+
+# mount the sd card
+mount /dev/mmcblk0p1 ${S}
+
+if [ -f ${S}/${C} ]; then
+    echo "Running startup script"
+    cp ${S}/${C} ${D}/${C}
+    source ${D}/${C}
+else
+    echo "No startup script file found"
+fi
+
+# Load /etc files
+if [ -d ${S}/etc ]; then
+    echo "Loading /etc from SD"
+    cp -rv ${S}/etc/* /etc/
+fi
+
+# if bitfile exists on SD card, program it
+if [ -f ${S}/firmware.bin ]; then
+    echo "Firmware file found, programming"
+    mkdir -p /lib/firmware
+    cp ${S}/firmware.bin /lib/firmware/
+    rmmod yourmodule
+    echo "Programming FPGA"
+    echo firmware.bin > /sys/class/fpga_manager/fpga0/firmware
+    modprobe yourmodule
+fi
+
+umount ${S}
+
+# set hostname again, in case it changed
+#/etc/init.d/hostname.sh
+
+
+adcinit
+exit 0

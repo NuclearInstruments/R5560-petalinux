@@ -23,6 +23,7 @@ IMAGE_INSTALL = "\
 		tcf-agent \
 		bridge-utils \
 		adcinit \
+		bootscript \
 		nibridge \
 		rwmem \
 		"
