@@ -43,21 +43,25 @@ if [ -d ${S}/etc ]; then
 fi
 
 # if bitfile exists on SD card, program it
-if [ -f ${S}/firmware.bin ]; then
+if [ -f ${S}/firmware.fpga ]; then
     echo "Firmware file found, programming"
     mkdir -p /lib/firmware
-    cp ${S}/firmware.bin /lib/firmware/
+    cp ${S}/firmware.fpga /lib/firmware/firmware.bin
     rmmod yourmodule
     echo "Programming FPGA"
     echo firmware.bin > /sys/class/fpga_manager/fpga0/firmware
-    modprobe yourmodule
 fi
 
+cp ${S}/interfaces /etc/network/interfaces
+
 umount ${S}
+
 
 # set hostname again, in case it changed
 #/etc/init.d/hostname.sh
 
 
 adcinit
+
+nibridge &
 exit 0

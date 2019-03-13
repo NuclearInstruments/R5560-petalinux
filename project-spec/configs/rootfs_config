@@ -4136,6 +4136,7 @@ CONFIG_bootscript=y
 CONFIG_nibridge=y
 # CONFIG_peekpoke is not set
 CONFIG_rwmem=y
+CONFIG_settings=y
 
 #
 # user packages 

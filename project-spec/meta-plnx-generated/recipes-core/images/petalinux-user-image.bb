@@ -26,5 +26,6 @@ IMAGE_INSTALL = "\
 		bootscript \
 		nibridge \
 		rwmem \
+		settings \
 		"
 EXTRA_USERS_PARAMS = "usermod -P root root;"

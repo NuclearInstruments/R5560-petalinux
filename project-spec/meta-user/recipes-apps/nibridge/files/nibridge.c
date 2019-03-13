@@ -133,8 +133,8 @@ void *connection_handler(void *socket_desc) {
     int sock = *(int*)socket_desc;
         
 	char *buffer;		
-	buffer=(char *) malloc ( 0x100000 );
-	
+	buffer=(char *) malloc ( 0x1000000 );
+	printf("[NIBRIDGE] New client Connected. \n");
     do
 	{
 		read_size = recv(sock, buffer, HEADER_LEN*4, 0);
@@ -144,64 +144,70 @@ void *connection_handler(void *socket_desc) {
 		    cmd_flags=*((uint32_t *)(&buffer[4]));	
 		    cmd_address=*((uint32_t *)(&buffer[8]));		    	    
 		    cmd_len=*((uint32_t *)(&buffer[12]));		    	    
-		    printf("HEADER:    %8x\n",cmd_header);
+		    /*printf("HEADER:    %8x\n",cmd_header);
 		    printf("FLAGS:     %8x\n",cmd_flags);
 		    printf("ADDRESS:   %8x\n",cmd_address);
-		    printf("LEN:       %8x\n",cmd_len);	
-   		    printf("\n");				    
+		    printf("LEN:       %8x\n",cmd_len);	*/
+   		    //printf("\n");				    
 		    cmd_op = cmd_flags & 0xFF;	    		    		    
-
-            switch(cmd_op)
+            
+            if (cmd_len<0x1000000/4)
             {
-                case 0:
-                    read_size = recv(sock, buffer, REG_SIZE, 0);
-                    if (read_size == REG_SIZE)
-                    {
-                        res = WriteReg(R5550RegArea, cmd_address, *((uint32_t *)buffer));
-                    }
-                    break;
-                    
-                case 1:
-                    v = ReadReg(R5550RegArea, cmd_address);        
-                    memcpy(buffer, &v, sizeof(uint32_t));
-                    read_size = send(sock, buffer, REG_SIZE, 0);
-                    break;
+                switch(cmd_op)
+                {
+                    case 0:
+                        read_size = recv(sock, buffer, REG_SIZE, 0);
+                        if (read_size == REG_SIZE)
+                        {
+                            res = WriteReg(R5550RegArea, cmd_address, *((uint32_t *)buffer));
+                        }
+                        break;
+                        
+                    case 1:
+                        v = ReadReg(R5550RegArea, cmd_address);        
+                        memcpy(buffer, &v, sizeof(uint32_t));
+                        read_size = send(sock, buffer, REG_SIZE, MSG_NOSIGNAL );
+                        break;
 
-                case 2:
-                    read_size = recv(sock, buffer, cmd_len * REG_SIZE, 0);
-                    if (read_size == cmd_len * REG_SIZE)
-                    {
-                        WriteMem(R5550RegArea, cmd_address, cmd_len, (uint32_t *)buffer);
-                    }
-                    break;
-                    
-                case 3:
-                    ReadMem(R5550RegArea, cmd_address, cmd_len, (uint32_t *)buffer);              
-                    read_size = send(sock, buffer, cmd_len * REG_SIZE, 0);
-                    break;                    
-                    
-                case 4:
-                    {
-                        uint32_t status_address;
-                        uint32_t timeout;                        
-                        uint32_t blocking;                                                
-                        uint32_t word_read;                                 
-                        read_size = recv(sock, buffer, 8, 0);   
-              		    status_address=*((uint32_t *)(&buffer[0]));             
-            		    timeout=*((uint32_t *)(&buffer[4])) & 0xFFFFFF;              		    
-		                blocking=(*((uint32_t *)(&buffer[4]))>>31) & 0x1;     
-		                              		    
-                        printf("STATUS_ADDR:    %8x\n",status_address);
-            		    printf("TIMEOUT_MS:     %d\n",timeout);
-            		    printf("BLOCKING:       %x\n",blocking);            		    
+                    case 2:
+                        read_size = recv(sock, buffer, cmd_len * REG_SIZE, 0);
+                        if (read_size == cmd_len * REG_SIZE)
+                        {
+                            WriteMem(R5550RegArea, cmd_address, cmd_len, (uint32_t *)buffer);
+                        }
+                        break;
+                        
+                    case 3:
+                        ReadMem(R5550RegArea, cmd_address, cmd_len, (uint32_t *)buffer);              
+                        read_size = send(sock, buffer, cmd_len * REG_SIZE, MSG_NOSIGNAL );
+                        break;                    
+                        
+                    case 4:
+                        {
+                            uint32_t status_address;
+                            uint32_t timeout;                        
+                            uint32_t blocking;                                                
+                            uint32_t word_read;                                 
+                            read_size = recv(sock, buffer, 8, 0);   
+                  		    status_address=*((uint32_t *)(&buffer[0]));             
+                		    timeout=*((uint32_t *)(&buffer[4])) & 0xFFFFFF;              		    
+		                    blocking=(*((uint32_t *)(&buffer[4]))>>31) & 0x1;     
+		                                  		    
+                            /*printf("STATUS_ADDR:    %8x\n",status_address);
+                		    printf("TIMEOUT_MS:     %d\n",timeout);
+                		    printf("BLOCKING:       %x\n",blocking);            		    */
 
-                        ReadFIFO(R5550RegArea, cmd_address, status_address, cmd_len, timeout,  (uint32_t *)buffer, &word_read, blocking); 
-                        read_size = send(sock,((char*) &word_read), REG_SIZE, 0);
-                        read_size = send(sock, buffer, REG_SIZE * word_read,0);                    
-                    break;                    
-                    }
-                    
-            }
+                            ReadFIFO(R5550RegArea, cmd_address, status_address, cmd_len, timeout,  (uint32_t *)buffer, &word_read, blocking); 
+                            read_size = send(sock,((char*) &word_read), REG_SIZE, MSG_NOSIGNAL );
+                            
+                            
+                            if (read_size>0)
+                                read_size = send(sock, buffer, REG_SIZE * word_read, MSG_NOSIGNAL );                    
+                        break;                    
+                        }
+                        
+                }
+             }
 		}
 	}	while (read_size!=0);
 		    

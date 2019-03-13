@@ -13,7 +13,7 @@ SRC_URI = "file://mystartup \
 inherit update-rc.d
 
 INITSCRIPT_NAME = "mystartup"
-INITSCRIPT_PARAMS = "start 99 S ."
+INITSCRIPT_PARAMS = "start 90 S ."
 
 S = "${WORKDIR}"
 
