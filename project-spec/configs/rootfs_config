@@ -4133,10 +4133,12 @@ CONFIG_bridge-utils=y
 CONFIG_adcinit=y
 CONFIG_bootscript=y
 # CONFIG_gpio-demo is not set
+CONFIG_libzmq=y
 CONFIG_nibridge=y
 # CONFIG_peekpoke is not set
 CONFIG_rwmem=y
 CONFIG_settings=y
+# CONFIG_zeromq is not set
 
 #
 # user packages 

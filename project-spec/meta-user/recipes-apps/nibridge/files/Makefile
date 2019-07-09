@@ -8,5 +8,5 @@ all: build
 build: $(APP)
 
 $(APP): $(APP_OBJS)
-	$(CC) $(LDFLAGS) -o $@ $(APP_OBJS) $(LDLIBS) -lpthread
+	$(CC) $(LDFLAGS)  -o $@ $(APP_OBJS) $(LDLIBS) -lpthread libzmq.so.5.2.2
 

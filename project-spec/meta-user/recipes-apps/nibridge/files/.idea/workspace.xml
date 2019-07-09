@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CMakeRunConfigurationManager" shouldGenerate="true" shouldDeleteObsolete="true">
+    <generated />
+  </component>
+  <component name="CMakeSettings">
+    <configurations>
+      <configuration PROFILE_NAME="Debug" CONFIG_NAME="Debug" />
+    </configurations>
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="3740a11d-db33-4bf1-9fc2-44dbbd751a79" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/../../../../../components/plnx_workspace/fsbl/.metadata/.plugins/org.eclipse.cdt.core/fsbl_bsp.1550838056650.pdom" beforeDir="false" afterPath="$PROJECT_DIR$/../../../../../components/plnx_workspace/fsbl/.metadata/.plugins/org.eclipse.cdt.core/fsbl_bsp.1550838056650.pdom" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../../../components/plnx_workspace/fsbl/.metadata/.plugins/org.eclipse.core.resources/.projects/fsbl/.markers.snap" beforeDir="false" afterPath="$PROJECT_DIR$/../../../../../components/plnx_workspace/fsbl/.metadata/.plugins/org.eclipse.core.resources/.projects/fsbl/.markers.snap" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../../../components/plnx_workspace/fsbl/.metadata/.plugins/org.eclipse.core.resources/.projects/fsbl/.syncinfo.snap" beforeDir="false" afterPath="$PROJECT_DIR$/../../../../../components/plnx_workspace/fsbl/.metadata/.plugins/org.eclipse.core.resources/.projects/fsbl/.syncinfo.snap" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../../../components/plnx_workspace/fsbl/.metadata/.plugins/org.eclipse.core.resources/.projects/fsbl_bsp/.markers.snap" beforeDir="false" afterPath="$PROJECT_DIR$/../../../../../components/plnx_workspace/fsbl/.metadata/.plugins/org.eclipse.core.resources/.projects/fsbl_bsp/.markers.snap" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../../../components/plnx_workspace/fsbl/.metadata/.plugins/org.eclipse.core.resources/.projects/fsbl_bsp/.syncinfo.snap" beforeDir="false" afterPath="$PROJECT_DIR$/../../../../../components/plnx_workspace/fsbl/.metadata/.plugins/org.eclipse.core.resources/.projects/fsbl_bsp/.syncinfo.snap" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../../../components/plnx_workspace/fsbl/.metadata/.plugins/org.eclipse.core.resources/.projects/fsbl_hwproj/.markers.snap" beforeDir="false" afterPath="$PROJECT_DIR$/../../../../../components/plnx_workspace/fsbl/.metadata/.plugins/org.eclipse.core.resources/.projects/fsbl_hwproj/.markers.snap" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../../../components/plnx_workspace/fsbl/.metadata/.plugins/org.eclipse.core.resources/.projects/fsbl_hwproj/.syncinfo.snap" beforeDir="false" afterPath="$PROJECT_DIR$/../../../../../components/plnx_workspace/fsbl/.metadata/.plugins/org.eclipse.core.resources/.projects/fsbl_hwproj/.syncinfo.snap" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../../../components/plnx_workspace/fsbl/.metadata/.plugins/org.eclipse.core.resources/.root/.indexes/properties.index" beforeDir="false" afterPath="$PROJECT_DIR$/../../../../../components/plnx_workspace/fsbl/.metadata/.plugins/org.eclipse.core.resources/.root/.indexes/properties.index" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../../../components/plnx_workspace/fsbl/.metadata/.plugins/org.eclipse.core.resources/.root/.markers.snap" beforeDir="false" afterPath="$PROJECT_DIR$/../../../../../components/plnx_workspace/fsbl/.metadata/.plugins/org.eclipse.core.resources/.root/.markers.snap" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../../../components/plnx_workspace/fsbl/.metadata/.plugins/org.eclipse.core.resources/.safetable/org.eclipse.core.resources" beforeDir="false" afterPath="$PROJECT_DIR$/../../../../../components/plnx_workspace/fsbl/.metadata/.plugins/org.eclipse.core.resources/.safetable/org.eclipse.core.resources" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../../../components/plnx_workspace/fsbl/.metadata/.plugins/org.eclipse.core.resources/0.snap" beforeDir="false" afterPath="$PROJECT_DIR$/../../../../../components/plnx_workspace/fsbl/.metadata/.plugins/org.eclipse.core.resources/0.snap" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../../../components/plnx_workspace/fsbl/fsbl/Release/fsbl.elf" beforeDir="false" afterPath="$PROJECT_DIR$/../../../../../components/plnx_workspace/fsbl/fsbl/Release/fsbl.elf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../../../components/plnx_workspace/fsbl/fsbl_bsp/ps7_cortexa9_0/lib/libxil.a" beforeDir="false" afterPath="$PROJECT_DIR$/../../../../../components/plnx_workspace/fsbl/fsbl_bsp/ps7_cortexa9_0/lib/libxil.a" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../../../components/plnx_workspace/fsbl/fsbl_bsp/ps7_cortexa9_0/lib/libxilffs.a" beforeDir="false" afterPath="$PROJECT_DIR$/../../../../../components/plnx_workspace/fsbl/fsbl_bsp/ps7_cortexa9_0/lib/libxilffs.a" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../../configs/rootfs_config" beforeDir="false" afterPath="$PROJECT_DIR$/../../../../configs/rootfs_config" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../../meta-plnx-generated/recipes-core/images/petalinux-user-image.bb" beforeDir="false" afterPath="$PROJECT_DIR$/../../../../meta-plnx-generated/recipes-core/images/petalinux-user-image.bb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/Makefile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/nibridge.c" beforeDir="false" afterPath="$PROJECT_DIR$/nibridge.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../nibridge.bb" beforeDir="false" afterPath="$PROJECT_DIR$/../nibridge.bb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../recipes-core/images/petalinux-image.bbappend" beforeDir="false" afterPath="$PROJECT_DIR$/../../../recipes-core/images/petalinux-image.bbappend" afterDir="false" />
+    </list>
+    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ClangdSettings">
+    <option name="formatViaClangd" value="false" />
+  </component>
+  <component name="FileEditorManager">
+    <leaf>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/nibridge.c">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="425">
+              <caret line="244" selection-start-line="244" selection-end-line="244" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/zhelpers.h">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="986">
+              <caret line="191" column="34" lean-forward="true" selection-start-line="191" selection-start-column="34" selection-end-line="191" selection-end-column="34" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/zmq.h">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="362">
+              <caret line="325" column="8" selection-start-line="325" selection-start-column="8" selection-end-line="325" selection-end-column="8" />
+              <folding>
+                <element signature="e#24926#28640#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
+  </component>
+  <component name="FindInProjectRecents">
+    <findStrings>
+      <find>PCounter</find>
+      <find>MYDATA</find>
+      <find>thrdCfg</find>
+      <find>currentRunStatus</find>
+      <find>CurrentConfig</find>
+      <find>DEFAULT_BUFLEN</find>
+      <find>recv</find>
+      <find>DMA_BA_ADDRESS</find>
+      <find>AXI_BUS_BA</find>
+      <find>map_base</find>
+      <find>DATA_BA</find>
+      <find>CHAINS</find>
+      <find>XDATA_MOVER_AXIL_WIDTH_BUFSIZE</find>
+      <find>SWAP</find>
+      <find>XDATA_MOVER_AXIL_ADDR_BUFSIZE_BASE</find>
+      <find>SockStreamer</find>
+      <find>ZMQServer</find>
+      <find>zmq_errno</find>
+    </findStrings>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/../../../../.." />
+  </component>
+  <component name="IdeDocumentHistory">
+    <option name="CHANGED_PATHS">
+      <list>
+        <option value="$PROJECT_DIR$/nibridge.c" />
+      </list>
+    </option>
+  </component>
+  <component name="ProjectConfigurationFiles">
+    <option name="files">
+      <list>
+        <option value="$PROJECT_DIR$/.idea/vcs.xml" />
+      </list>
+    </option>
+  </component>
+  <component name="ProjectFrameBounds">
+    <option name="x" value="193" />
+    <option name="y" value="263" />
+    <option name="width" value="2208" />
+    <option name="height" value="1301" />
+  </component>
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectView">
+    <navigator proportions="" version="1">
+      <foldersAlwaysOnTop value="true" />
+    </navigator>
+    <panes>
+      <pane id="Scope" />
+      <pane id="ProjectPane">
+        <subPane>
+          <expand>
+            <path>
+              <item name="files" type="b2602c69:ProjectViewProjectNode" />
+              <item name="files" type="462c0819:PsiDirectoryNode" />
+            </path>
+          </expand>
+          <select />
+        </subPane>
+      </pane>
+    </panes>
+  </component>
+  <component name="PropertiesComponent">
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="settings.editor.selected.configurable" value="editor.preferences.fonts.default" />
+  </component>
+  <component name="RunDashboard">
+    <option name="ruleStates">
+      <list>
+        <RuleState>
+          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
+        </RuleState>
+        <RuleState>
+          <option name="name" value="StatusDashboardGroupingRule" />
+        </RuleState>
+      </list>
+    </option>
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="3740a11d-db33-4bf1-9fc2-44dbbd751a79" name="Default Changelist" comment="" />
+      <created>1561646900496</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1561646900496</updated>
+      <workItem from="1561646903081" duration="33510000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TimeTrackingManager">
+    <option name="totallyTimeSpent" value="33510000" />
+  </component>
+  <component name="ToolWindowManager">
+    <frame x="193" y="263" width="2208" height="1301" extended-state="0" />
+    <editor active="true" />
+    <layout>
+      <window_info id="Favorites" side_tool="true" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.15598886" />
+      <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
+      <window_info anchor="bottom" id="Database Changes" />
+      <window_info anchor="bottom" id="Version Control" />
+      <window_info anchor="bottom" id="Terminal" />
+      <window_info anchor="bottom" id="Event Log" side_tool="true" />
+      <window_info anchor="bottom" id="Message" order="0" />
+      <window_info anchor="bottom" id="Find" order="1" />
+      <window_info anchor="bottom" id="Run" order="2" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
+      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
+      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
+      <window_info anchor="bottom" id="TODO" order="6" />
+      <window_info anchor="right" id="Database" />
+      <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
+      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
+      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
+    </layout>
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="1" />
+  </component>
+  <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/zhelpers.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="986">
+          <caret line="191" column="34" lean-forward="true" selection-start-line="191" selection-start-column="34" selection-end-line="191" selection-end-column="34" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/zmq.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="362">
+          <caret line="325" column="8" selection-start-line="325" selection-start-column="8" selection-end-line="325" selection-end-column="8" />
+          <folding>
+            <element signature="e#24926#28640#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/nibridge.c">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="425">
+          <caret line="244" selection-start-line="244" selection-end-line="244" />
+        </state>
+      </provider>
+    </entry>
+  </component>
+</project>

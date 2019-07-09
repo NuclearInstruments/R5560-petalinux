@@ -18,11 +18,62 @@
 #include <math.h>
 #include <time.h>
 
+#include "zmq.h"
+#include "zhelpers.h"
+
 #define SEGMENT_SIZE 0x10000000
 #define PAGE_SIZE ((size_t)getpagesize())
 #define PAGE_MASK ((uint64_t)(long)~(PAGE_SIZE - 1))
 #define REG_SIZE 4
 
+
+//DMA SECTION
+
+
+
+
+
+
+#define AXI_BUS_BA 0x43C10000
+#define MAP_SIZE (1024*1024*1UL)
+#define DEFAULT_BUFFER_SIZE 2048*(1024*8)
+
+#define MAP_MASK (MAP_SIZE - 1)
+#define CHAINS 1
+#define DATA_BA 0x30000000
+#define MAP_SIZE_DATA (256*1024*1024*1UL)
+
+
+const uint32_t DMA_BA_ADDRESS[] = {0x0000, 0x1000};
+const uint32_t DD3_ADDRESS[] = {0x00000000, 0x08000000};
+
+#define XDATA_MOVER_AXIL_ADDR_BUFFER_STATUS_DATA 0x10
+#define XDATA_MOVER_AXIL_BITS_BUFFER_STATUS_DATA 32
+#define XDATA_MOVER_AXIL_ADDR_BUFFER_STATUS_CTRL 0x14
+#define XDATA_MOVER_AXIL_ADDR_BUFFER_ACK_DATA    0x18
+#define XDATA_MOVER_AXIL_BITS_BUFFER_ACK_DATA    32
+#define XDATA_MOVER_AXIL_ADDR_RUN_DATA           0x38
+#define XDATA_MOVER_AXIL_BITS_RUN_DATA           1
+#define XDATA_MOVER_AXIL_ADDR_DDROFFSET_V_DATA   0x40
+#define XDATA_MOVER_AXIL_BITS_DDROFFSET_V_DATA   32
+#define XDATA_MOVER_AXIL_ADDR_BUFFER_SEQ_BASE    0x20
+#define XDATA_MOVER_AXIL_ADDR_BUFFER_SEQ_HIGH    0x2f
+#define XDATA_MOVER_AXIL_WIDTH_BUFFER_SEQ        64
+#define XDATA_MOVER_AXIL_DEPTH_BUFFER_SEQ        2
+#define XDATA_MOVER_AXIL_ADDR_BUFSIZE_BASE       0x30
+#define XDATA_MOVER_AXIL_ADDR_BUFSIZE_HIGH       0x37
+#define XDATA_MOVER_AXIL_WIDTH_BUFSIZE           32
+#define XDATA_MOVER_AXIL_DEPTH_BUFSIZE           2
+#define XDATA_MOVER_AXIL_ADDR_STAT_COUNTER_BASE  0x60
+#define XDATA_MOVER_AXIL_ADDR_STAT_COUNTER_HIGH  0x7f
+#define XDATA_MOVER_AXIL_WIDTH_STAT_COUNTER      64
+#define XDATA_MOVER_AXIL_DEPTH_STAT_COUNTER      4
+
+
+
+
+//END DMA SECTION
+int TotalAllocatedBuffer=0;
 void *R5550RegArea;
 
 inline uint32_t ReadReg(void *mm, uint32_t address);
@@ -38,6 +89,11 @@ uint32_t ReadFIFO(void *mm, uint32_t address, uint32_t status_address, uint32_t 
 int WriteMem(void *mm, uint32_t address, uint32_t len, uint32_t *v);
 
 int ReadMem(void *mm, uint32_t address, uint32_t len, uint32_t *v);
+
+void *context;
+void *publisher;
+
+int ZMQServer (void);
 
 int main(int argc, char **argv)
 {
@@ -65,7 +121,321 @@ int main(int argc, char **argv)
     }
     printf("\n");    
     
+    ZMQServer();
     NiBridgeBasicTCPServer();
+    
+    
+    
+    zmq_ctx_destroy (context);
+    return 0;
+}
+
+
+
+
+bool SSTHRunning = false;
+
+void my_free (void *data, void *hint) {
+    if (data!=NULL) {
+        TotalAllocatedBuffer--;
+        printf("Free Pointer: %8X\n", data);
+        free(data);
+    }
+
+}
+
+
+
+void my_copy(volatile unsigned char *dst, volatile unsigned char *src, int sz)
+{
+    if (sz & 63) {
+        sz = (sz & -64) + 64;
+    }
+    asm volatile (
+    "NEONCopyPLD_%=:                          \n"
+    "    VLDM %[src]!,{d0-d7}                 \n"
+    "    VSTM %[dst]!,{d0-d7}                 \n"
+    "    SUBS %[sz],%[sz],#0x40                 \n"
+    "    BGT NEONCopyPLD_%=                  \n"
+    : [dst]"+r"(dst), [src]"+r"(src), [sz]"+r"(sz) : : "d0", "d1", "d2", "d3", "d4", "d5", "d6", "d7", "cc", "memory");
+}
+
+void SockStreamer(void *lpParam)
+{
+    char *data_array;
+
+
+
+    int iResult;
+    int PackLen;
+
+    int ListenSocket = -1;
+    int ClientSocket = -1;
+
+    struct addrinfo *result = NULL;
+    struct addrinfo hints;
+
+    int iSendResult;
+
+    uint64_t Timecode = 0;
+    uint32_t *DataHT;
+    uint32_t *DataHE;
+    uint32_t PCounter = 0;
+
+    uint64_t timecode_h = 0;
+    uint64_t timecode_s = 0;
+
+    SSTHRunning = false;
+
+
+
+
+    int i,j;
+    char *buffer;
+    uint32_t transdata;
+    uint32_t max_size_chunk;
+    uint32_t address = DD3_ADDRESS[0];
+    uint32_t size = DEFAULT_BUFFER_SIZE;
+    uint32_t offset = 0;
+    uint32_t count = 1;
+    uint32_t run = 0;
+    uint32_t chain = 0;
+    uint32_t seg[CHAINS];
+    uint32_t BState[32];
+    uint64_t BIndex[32];
+    uint32_t BSize[32];
+    uint32_t read_result;
+
+    uint64_t Stat_EVNT_IN;
+    uint64_t Stat_EVNT_OUT;
+    uint64_t Stat_EVNT_LOST;
+    uint64_t Stat_EVNT_TDIST;
+    struct timespec time_now;
+    volatile uint64_t *u64memPointer;
+    volatile uint8_t *u8memPointer;
+
+    volatile void *map_base;
+    volatile void *map_base_data;
+    int fd_reg;
+
+
+
+    if ((fd_reg = open("/dev/mem", O_RDWR | O_SYNC)) == -1) return;
+
+    /* map one page */
+    map_base = mmap(0, MAP_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd_reg, AXI_BUS_BA);
+    if (map_base == (void *) -1) return;
+    printf("Memory AXIBUS mapped at address %p.\n", map_base);
+
+    map_base_data = mmap(0, MAP_SIZE_DATA, PROT_READ, MAP_SHARED, fd_reg, DATA_BA) ;
+    if (map_base_data == (void *) -1) return;
+    printf("Memory DATA mapped at address %p.\n", map_base_data);
+
+
+
+
+
+    *((uint32_t *) (map_base + DMA_BA_ADDRESS[0] + XDATA_MOVER_AXIL_ADDR_DDROFFSET_V_DATA)) = DATA_BA;
+    *((uint32_t *) (map_base + DMA_BA_ADDRESS[0] + XDATA_MOVER_AXIL_ADDR_RUN_DATA)) = 0x01;
+
+
+    data_array = (char *) malloc(size);
+    printf("Allocate Pointer: %8X\n", data_array);
+    TotalAllocatedBuffer++;
+
+    printf("Starting streaming socket\n");
+
+
+
+    // Receive until the peer shuts down the connection
+    //
+    do {
+
+        //if (TotalAllocatedBuffer<2) {
+            bool transfered = false;
+            for (chain = 0; chain < CHAINS; chain++) {
+                read_result = *((volatile uint32_t *) (map_base + DMA_BA_ADDRESS[chain] +
+                                                       XDATA_MOVER_AXIL_ADDR_BUFFER_STATUS_DATA));
+                // printf("DMA[%05X]  Status Reg: %08x\n",DMA_BA_ADDRESS[chain], (unsigned int)read_result);
+
+                for (i = 0; i < 8; i++) {
+                    BState[i] = (read_result >> i) & 0x01;
+                }
+
+                for (i = 0; i < 8; i++) {
+                    if (BState[i] == 1) {
+                        BIndex[i] = *((volatile uint64_t *) (map_base + DMA_BA_ADDRESS[chain] +
+                                                             XDATA_MOVER_AXIL_ADDR_BUFFER_SEQ_BASE +
+                                                             i * sizeof(uint64_t)));
+                        BSize[i] = *((volatile uint32_t *) (map_base + DMA_BA_ADDRESS[chain] +
+                                                            XDATA_MOVER_AXIL_ADDR_BUFSIZE_BASE + i * sizeof(uint32_t)));
+                        BSize[i] = BSize[i] / 2;
+                        // printf("Buffer [%2d] \t\t Index: %16lx \t\t Size:0x%08x\n", i, BIndex[i],  BSize[i]);
+                    }
+                }
+
+
+                for (i = 0; i < 8; i++) {
+                    if (BState[i] == 1) {
+                        transfered = true;
+                        int file_write_size;
+                        uint32_t ACQevents;
+                        size = BSize[i] * sizeof(uint64_t) < DEFAULT_BUFFER_SIZE ? BSize[i] * sizeof(uint64_t) :
+                               DEFAULT_BUFFER_SIZE;
+                        address = DD3_ADDRESS[chain] + i * DEFAULT_BUFFER_SIZE;
+                        printf("DMA[%05X] address = 0x%08x, size = 0x%08x, offset = 0x%08x, count = %u -- BUFFERS:%4d\n",
+                               DMA_BA_ADDRESS[chain], address, size, offset, count, TotalAllocatedBuffer);
+                        u64memPointer = (volatile uint64_t *) (map_base_data + address);
+                        ACQevents = size / sizeof(uint64_t);
+
+                        /*if (ACQevents>5)
+                        {
+                            printf("-------------------------------------------------\n");
+                            for (j=0;j<6;j++)
+                            {
+                                printf("\t%08llX\n", u64memPointer[j]);
+                            }
+                            printf(".......\n");
+                            for (j=-3;j<0;j++)
+                            {
+                                printf("\t%08llX\n", u64memPointer[size/sizeof(uint64_t) +j]);
+                            }
+                            printf("-------------------------------------------------\n");
+                        }*/
+                        //Eseguire la memcopy
+                        //memcpy(data_array, u64memPointer, size);
+                        my_copy(data_array, u64memPointer, size);
+                        int size_sent = zmq_send (publisher, (char *) data_array, size, 0);
+
+                        /*if (data_array != NULL) {
+                            if (size > 0) {
+
+                                zmq_msg_t message;
+                                zmq_msg_init_data(&message, data_array, size, my_free, NULL);
+                                zmq_msg_send(&message, publisher, 0);
+                                zmq_msg_close(&message);
+                            }
+                        } else {
+                            printf("TXBuffer Memory allocation failed!\n");
+                        }*/
+
+                        /*data_array[0] = 0xAB;
+                        data_array[1] = 0xBA;
+                        data_array[2] = 0xFF;
+                        data_array[3] = 0x01;
+                        memcpy((char*)&data_array[4], &ACQevents, sizeof(uint32_t));*/
+
+                        //memcpy(&data_array[8], &PCounter, sizeof(uint32_t));
+
+                        *((volatile uint32_t *) (map_base + DMA_BA_ADDRESS[chain] +
+                                                 XDATA_MOVER_AXIL_ADDR_BUFFER_ACK_DATA)) = 0;
+                        *((volatile uint32_t *) (map_base + DMA_BA_ADDRESS[chain] +
+                                                 XDATA_MOVER_AXIL_ADDR_BUFFER_ACK_DATA)) = (1 << i);
+                        *((volatile uint32_t *) (map_base + DMA_BA_ADDRESS[chain] +
+                                                 XDATA_MOVER_AXIL_ADDR_BUFFER_ACK_DATA)) = 0;
+
+                        PCounter++;
+
+                    }
+                }
+            }
+
+            if (transfered == false)
+                usleep(1000);
+       // }
+       // else
+       //     usleep(1000);
+    } while (1);
+
+
+    usleep(1000);
+    // shutdown the connection since we're done
+
+
+    printf("[STREAMING] Socket Shutdown!\n");
+
+
+
+    //STOP DMA
+    *((uint32_t *) (map_base + DMA_BA_ADDRESS[0] + XDATA_MOVER_AXIL_ADDR_RUN_DATA)) = 0x00;
+
+
+    SSTHRunning = false;
+
+
+    return 0;
+
+}
+
+
+
+void *ZMQWorker(void *data)
+{
+    printf("ZMQ main thread started \n");
+    char *buffer = (char*) malloc(1024*1024*16*sizeof(char));
+    uint32_t q=0;
+    while (1) {
+        
+        int size = zmq_send (publisher, buffer, 1024*1024*16, 0);
+        printf("Sent[%d]: %d\n",q++, size);
+        
+        /*
+        //  Get values that will fool the boss
+        int zipcode, temperature, relhumidity;
+        zipcode     = 10001;
+        temperature = temperature + 1;
+        relhumidity = relhumidity+1;
+
+        //  Send message to all subscribers
+        char update [20];
+        sprintf (update, "%05d %d %d", zipcode, temperature, relhumidity);
+        s_send (publisher, update);*/
+    }
+    
+    
+    zmq_close (publisher);
+
+   
+
+}
+
+int ZMQServer (void)
+{
+    printf("Starting ZMQ server \n");
+    
+    context = zmq_ctx_new ();
+    publisher = zmq_socket (context, ZMQ_PUSH);
+
+    int hwm = 10;
+    int rc = zmq_setsockopt(publisher, ZMQ_SNDHWM, &hwm, sizeof(int));
+    if (rc!=0)
+    {
+        printf("SetSockOption error %d -> %s\n", zmq_errno(), zmq_strerror(zmq_errno()));
+
+
+    }
+    rc = zmq_setsockopt(publisher, ZMQ_RCVHWM, &hwm, sizeof(int));
+    if (rc!=0)
+    {
+        printf("SetSockOption error %d -> %s\n", zmq_errno(), zmq_strerror(zmq_errno()));
+
+
+    }
+
+    rc = zmq_bind (publisher, "tcp://*:5556");
+
+    if (rc != 0)
+    {
+        printf("bind error %d -> %s\n", zmq_errno(), zmq_strerror(zmq_errno()));
+        return -1;
+    }
+    pthread_t thread_id;
+    if(pthread_create( &thread_id, NULL,  SockStreamer, NULL) < 0) {
+			printf("could not create thread for ZMQ\n");
+			return 1;
+        }
+		
+    
     return 0;
 }
 

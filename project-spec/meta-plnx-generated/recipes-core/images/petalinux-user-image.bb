@@ -24,6 +24,7 @@ IMAGE_INSTALL = "\
 		bridge-utils \
 		adcinit \
 		bootscript \
+		libzmq \
 		nibridge \
 		rwmem \
 		settings \
