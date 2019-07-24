@@ -105,17 +105,17 @@
 #
 # e2fsprogs 
 #
-# CONFIG_e2fsprogs is not set
+CONFIG_e2fsprogs=y
 # CONFIG_e2fsprogs-resize2fs is not set
 # CONFIG_e2fsprogs-badblocks is not set
-# CONFIG_e2fsprogs-e2fsck is not set
+CONFIG_e2fsprogs-e2fsck=y
 # CONFIG_libss is not set
 # CONFIG_libcomerr is not set
-# CONFIG_libext2fs is not set
+CONFIG_libext2fs=y
 # CONFIG_e2fsprogs-dev is not set
-# CONFIG_e2fsprogs-tune2fs is not set
+CONFIG_e2fsprogs-tune2fs=y
 # CONFIG_libe2p is not set
-# CONFIG_e2fsprogs-mke2fs is not set
+CONFIG_e2fsprogs-mke2fs=y
 # CONFIG_e2fsprogs-dbg is not set
 
 #
@@ -339,7 +339,7 @@ CONFIG_tar=y
 # CONFIG_util-linux-dev is not set
 # CONFIG_util-linux-fsck.cramfs is not set
 # CONFIG_util-linux-swaponoff is not set
-# CONFIG_util-linux-sfdisk is not set
+CONFIG_util-linux-sfdisk=y
 # CONFIG_util-linux-uuidd is not set
 # CONFIG_util-linux-getopt is not set
 # CONFIG_util-linux-findfs is not set
@@ -4132,6 +4132,7 @@ CONFIG_bridge-utils=y
 #
 CONFIG_adcinit=y
 CONFIG_bootscript=y
+CONFIG_configdaemon=y
 # CONFIG_gpio-demo is not set
 CONFIG_libzmq=y
 CONFIG_nibridge=y

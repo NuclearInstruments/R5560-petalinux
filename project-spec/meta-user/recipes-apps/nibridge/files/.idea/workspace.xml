@@ -10,25 +10,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="3740a11d-db33-4bf1-9fc2-44dbbd751a79" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/../../../../../components/plnx_workspace/fsbl/.metadata/.plugins/org.eclipse.cdt.core/fsbl_bsp.1550838056650.pdom" beforeDir="false" afterPath="$PROJECT_DIR$/../../../../../components/plnx_workspace/fsbl/.metadata/.plugins/org.eclipse.cdt.core/fsbl_bsp.1550838056650.pdom" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../../../components/plnx_workspace/fsbl/.metadata/.plugins/org.eclipse.core.resources/.projects/fsbl/.markers.snap" beforeDir="false" afterPath="$PROJECT_DIR$/../../../../../components/plnx_workspace/fsbl/.metadata/.plugins/org.eclipse.core.resources/.projects/fsbl/.markers.snap" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../../../components/plnx_workspace/fsbl/.metadata/.plugins/org.eclipse.core.resources/.projects/fsbl/.syncinfo.snap" beforeDir="false" afterPath="$PROJECT_DIR$/../../../../../components/plnx_workspace/fsbl/.metadata/.plugins/org.eclipse.core.resources/.projects/fsbl/.syncinfo.snap" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../../../components/plnx_workspace/fsbl/.metadata/.plugins/org.eclipse.core.resources/.projects/fsbl_bsp/.markers.snap" beforeDir="false" afterPath="$PROJECT_DIR$/../../../../../components/plnx_workspace/fsbl/.metadata/.plugins/org.eclipse.core.resources/.projects/fsbl_bsp/.markers.snap" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../../../components/plnx_workspace/fsbl/.metadata/.plugins/org.eclipse.core.resources/.projects/fsbl_bsp/.syncinfo.snap" beforeDir="false" afterPath="$PROJECT_DIR$/../../../../../components/plnx_workspace/fsbl/.metadata/.plugins/org.eclipse.core.resources/.projects/fsbl_bsp/.syncinfo.snap" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../../../components/plnx_workspace/fsbl/.metadata/.plugins/org.eclipse.core.resources/.projects/fsbl_hwproj/.markers.snap" beforeDir="false" afterPath="$PROJECT_DIR$/../../../../../components/plnx_workspace/fsbl/.metadata/.plugins/org.eclipse.core.resources/.projects/fsbl_hwproj/.markers.snap" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../../../components/plnx_workspace/fsbl/.metadata/.plugins/org.eclipse.core.resources/.projects/fsbl_hwproj/.syncinfo.snap" beforeDir="false" afterPath="$PROJECT_DIR$/../../../../../components/plnx_workspace/fsbl/.metadata/.plugins/org.eclipse.core.resources/.projects/fsbl_hwproj/.syncinfo.snap" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../../../components/plnx_workspace/fsbl/.metadata/.plugins/org.eclipse.core.resources/.root/.indexes/properties.index" beforeDir="false" afterPath="$PROJECT_DIR$/../../../../../components/plnx_workspace/fsbl/.metadata/.plugins/org.eclipse.core.resources/.root/.indexes/properties.index" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../../../components/plnx_workspace/fsbl/.metadata/.plugins/org.eclipse.core.resources/.root/.markers.snap" beforeDir="false" afterPath="$PROJECT_DIR$/../../../../../components/plnx_workspace/fsbl/.metadata/.plugins/org.eclipse.core.resources/.root/.markers.snap" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../../../components/plnx_workspace/fsbl/.metadata/.plugins/org.eclipse.core.resources/.safetable/org.eclipse.core.resources" beforeDir="false" afterPath="$PROJECT_DIR$/../../../../../components/plnx_workspace/fsbl/.metadata/.plugins/org.eclipse.core.resources/.safetable/org.eclipse.core.resources" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../../../components/plnx_workspace/fsbl/.metadata/.plugins/org.eclipse.core.resources/0.snap" beforeDir="false" afterPath="$PROJECT_DIR$/../../../../../components/plnx_workspace/fsbl/.metadata/.plugins/org.eclipse.core.resources/0.snap" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../../../components/plnx_workspace/fsbl/fsbl/Release/fsbl.elf" beforeDir="false" afterPath="$PROJECT_DIR$/../../../../../components/plnx_workspace/fsbl/fsbl/Release/fsbl.elf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../../../components/plnx_workspace/fsbl/fsbl_bsp/ps7_cortexa9_0/lib/libxil.a" beforeDir="false" afterPath="$PROJECT_DIR$/../../../../../components/plnx_workspace/fsbl/fsbl_bsp/ps7_cortexa9_0/lib/libxil.a" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../../../components/plnx_workspace/fsbl/fsbl_bsp/ps7_cortexa9_0/lib/libxilffs.a" beforeDir="false" afterPath="$PROJECT_DIR$/../../../../../components/plnx_workspace/fsbl/fsbl_bsp/ps7_cortexa9_0/lib/libxilffs.a" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../../../../configs/rootfs_config" beforeDir="false" afterPath="$PROJECT_DIR$/../../../../configs/rootfs_config" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../../../../meta-plnx-generated/recipes-core/images/petalinux-user-image.bb" beforeDir="false" afterPath="$PROJECT_DIR$/../../../../meta-plnx-generated/recipes-core/images/petalinux-user-image.bb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/Makefile" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/nibridge.c" beforeDir="false" afterPath="$PROJECT_DIR$/nibridge.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../nibridge.bb" beforeDir="false" afterPath="$PROJECT_DIR$/../nibridge.bb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../../../recipes-core/images/petalinux-image.bbappend" beforeDir="false" afterPath="$PROJECT_DIR$/../../../recipes-core/images/petalinux-image.bbappend" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -42,11 +26,20 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/nibridge.c">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="425">
-              <caret line="244" selection-start-line="244" selection-end-line="244" />
+            <state relative-caret-position="187">
+              <caret line="11" selection-start-line="11" selection-end-line="11" selection-end-column="18" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/../../configdaemon/files/configdaemon.c">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="933">
+              <caret line="377" column="59" lean-forward="true" selection-start-line="377" selection-start-column="59" selection-end-line="377" selection-end-column="59" />
             </state>
           </provider>
         </entry>
@@ -94,6 +87,16 @@
       <find>SockStreamer</find>
       <find>ZMQServer</find>
       <find>zmq_errno</find>
+      <find>DHCP_action</find>
+      <find>XDATA_MOVER_AXIL_ADDR_BUFFER_STATUS_DATA</find>
+      <find>ifcfg_t</find>
+      <find>OpenMap</find>
+      <find>REG_OFS</find>
+      <find>DNS</find>
+      <find>pow</find>
+      <find>REG_LIVE_IP</find>
+      <find>UpdateNetwork</find>
+      <find>loadEthSettings</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -103,9 +106,11 @@
     <option name="CHANGED_PATHS">
       <list>
         <option value="$PROJECT_DIR$/nibridge.c" />
+        <option value="$PROJECT_DIR$/../../configdaemon/files/configdaemon.c" />
       </list>
     </option>
   </component>
+  <component name="OCFindUsagesOptions" text="true" ivars="false" properties="true" derivedClasses="false" />
   <component name="ProjectConfigurationFiles">
     <option name="files">
       <list>
@@ -114,8 +119,8 @@
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="193" />
-    <option name="y" value="263" />
+    <option name="x" value="257" />
+    <option name="y" value="258" />
     <option name="width" value="2208" />
     <option name="height" value="1301" />
   </component>
@@ -140,6 +145,7 @@
     </panes>
   </component>
   <component name="PropertiesComponent">
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="settings.editor.selected.configurable" value="editor.preferences.fonts.default" />
@@ -166,15 +172,15 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1561646900496</updated>
-      <workItem from="1561646903081" duration="33510000" />
+      <workItem from="1561646903081" duration="55259000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="33510000" />
+    <option name="totallyTimeSpent" value="55259000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="193" y="263" width="2208" height="1301" extended-state="0" />
+    <frame x="257" y="258" width="2208" height="1301" extended-state="0" />
     <editor active="true" />
     <layout>
       <window_info id="Favorites" side_tool="true" />
@@ -220,8 +226,15 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/nibridge.c">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="425">
-          <caret line="244" selection-start-line="244" selection-end-line="244" />
+        <state relative-caret-position="187">
+          <caret line="11" selection-start-line="11" selection-end-line="11" selection-end-column="18" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../../configdaemon/files/configdaemon.c">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="933">
+          <caret line="377" column="59" lean-forward="true" selection-start-line="377" selection-start-column="59" selection-end-line="377" selection-end-column="59" />
         </state>
       </provider>
     </entry>

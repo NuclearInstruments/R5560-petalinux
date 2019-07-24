@@ -18,6 +18,11 @@
 #include <math.h>
 #include <time.h>
 
+#include <dirent.h>
+#include <linux/i2c-dev.h>
+#include <fcntl.h>
+#include <termios.h>
+
 #include "zmq.h"
 #include "zhelpers.h"
 
@@ -70,7 +75,7 @@ const uint32_t DD3_ADDRESS[] = {0x00000000, 0x08000000};
 #define XDATA_MOVER_AXIL_DEPTH_STAT_COUNTER      4
 
 
-
+int iic_fpga;
 
 //END DMA SECTION
 int TotalAllocatedBuffer=0;
@@ -89,6 +94,10 @@ uint32_t ReadFIFO(void *mm, uint32_t address, uint32_t status_address, uint32_t 
 int WriteMem(void *mm, uint32_t address, uint32_t len, uint32_t *v);
 
 int ReadMem(void *mm, uint32_t address, uint32_t len, uint32_t *v);
+
+void iicfpga_write(uint32_t int_address, uint32_t data);
+void iicfpga_read(uint32_t int_address, uint32_t *data);
+
 
 void *context;
 void *publisher;
@@ -119,8 +128,9 @@ int main(int argc, char **argv)
         if ((i+1)%16==0)
             printf("\n");
     }
-    printf("\n");    
-    
+    printf("\n");
+
+
     ZMQServer();
     NiBridgeBasicTCPServer();
     
@@ -715,6 +725,9 @@ uint32_t ReadFIFO(void *mm, uint32_t address, uint32_t status_address, uint32_t 
     
     return 0;
 }
+
+
+
 
 
 

@@ -54,7 +54,7 @@ fi
 
 cp ${S}/interfaces /etc/network/interfaces
 
-umount ${S}
+#umount ${S}
 
 
 # set hostname again, in case it changed
@@ -62,6 +62,7 @@ umount ${S}
 
 
 adcinit
+configdaemon &
 
 nibridge &
 exit 0
