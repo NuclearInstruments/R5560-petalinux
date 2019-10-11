@@ -25,6 +25,19 @@ fi
 mkdir -p ${S}
 mkdir -p ${D}
 
+echo ""
+echo ""
+echo ""
+echo ""
+echo "--------------------------------------------"
+echo "-        NUCLEAR INSTRUMENTS R5560         -"
+echo "-                                          -"
+echo "-       loading firmware and daemons       -"
+echo "--------------------------------------------"
+echo ""
+echo ""
+
+echo "** Mounting SD-CARD"
 # mount the sd card
 mount /dev/mmcblk0p1 ${S}
 
@@ -36,33 +49,85 @@ else
     echo "No startup script file found"
 fi
 
+echo "** Loading persistent etc from SDCARD"
 # Load /etc files
 if [ -d ${S}/etc ]; then
     echo "Loading /etc from SD"
     cp -rv ${S}/etc/* /etc/
 fi
 
+
+echo "** Uploading firmware of fpga..."
 # if bitfile exists on SD card, program it
 if [ -f ${S}/firmware.fpga ]; then
     echo "Firmware file found, programming"
     mkdir -p /lib/firmware
     cp ${S}/firmware.fpga /lib/firmware/firmware.bin
-    rmmod yourmodule
     echo "Programming FPGA"
     echo firmware.bin > /sys/class/fpga_manager/fpga0/firmware
 fi
 
+echo "** Firmware current status is"
+cat /sys/class/fpga_manager/fpga0/state
+
+echo "** Loading ethernet interfaces file from SDCARD"
 cp ${S}/interfaces /etc/network/interfaces
 
 #umount ${S}
 
+if grep -q operating /sys/class/fpga_manager/fpga0/state
+then
 
-# set hostname again, in case it changed
-#/etc/init.d/hostname.sh
+    #FPGA is programmed
+
+    echo ""
+    echo ""
+    echo ""
+    echo "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
+    echo "****** HIT ANY KEY TO ENTER IN RECOVERY MODE ******"
+    echo "**** R5560 daemons will be loaded in 3 seconds ****"
+    echo "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
+    echo ""
+
+    read -n 1 -t 3
+    if [ $? == 0 ]; then
+    echo "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
+    echo "******                                       ******"
+    echo "****              RECOVERY MODE                ****"
+    echo "******                                       ******"
+    echo "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
+        
+        exit 0
+    fi
 
 
-adcinit
-configdaemon &
+    # set hostname again, in case it changed
+    #/etc/init.d/hostname.sh
 
-nibridge &
-exit 0
+
+    adcinit
+    configdaemon &
+
+    nibridge &
+    exit 0
+
+
+else
+    i2cset -y 0 0x20 0x3 0x0
+    i2cset -y 0 0x20 0x1 0xFE
+    echo ""
+    echo ""
+    echo ""
+    echo ""    
+    echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+    echo "******     R5560 ENTERED IN RECOVERY MODE    ******"
+    echo "**** Invalid or no firmware is loaded on FPGA  ****"
+    echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+    echo ""
+    echo ""
+    echo ""
+    echo ""
+    echo ""
+fi
+
+
