@@ -32,6 +32,8 @@ echo ""
 echo "--------------------------------------------"
 echo "-        NUCLEAR INSTRUMENTS R5560         -"
 echo "-                                          -"
+echo "-       IMAGE VERSION: 2020.01.15.01       -"
+echo "-                                          -"
 echo "-       loading firmware and daemons       -"
 echo "--------------------------------------------"
 echo ""
@@ -130,4 +132,7 @@ else
     echo ""
 fi
 
+
+ifdown eth0
+ifup eth0
 

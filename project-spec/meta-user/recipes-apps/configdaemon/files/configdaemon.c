@@ -198,10 +198,10 @@ int main(int argc, char **argv)
     printf("NM: %s\n", inet_ntoa(currentIP.nmask));
     printf("HW: %s\n", ether_ntoa(&currentIP.hwa));
 
-    sprintf(currentCfg.ip,"1.2.3.4");
-    sprintf(currentCfg.nm,"6.7.8.9");
-    sprintf(currentCfg.gw,"A.B.C.D");
-    sprintf(currentCfg.dns,"10.11.12.13");
+    sprintf(currentCfg.ip,"10.128.0.50");
+    sprintf(currentCfg.nm,"255.255.255.0");
+    sprintf(currentCfg.gw,"10.128.0.1");
+    sprintf(currentCfg.dns,"10.128.0.1");
 
 
     R5550RegArea = OpenMap();
@@ -268,10 +268,10 @@ int main(int argc, char **argv)
         if (temp_data!=0)
         {
             int c;
-            printf("Update eth settings\n");
+            printf("Update eth settings: %d\n", temp_data);
             c = (temp_data == 1) ? 0:1;
             toBeApplyCfg.dhcp = c;
-            printf("DHCP is: %d\n");
+            printf("DHCP is: %d\n", c);
             temp_data = ReadReg(R5550RegArea, UPDT_IP);
             tempIP.s_addr = temp_data;  strcpy(toBeApplyCfg.ip, inet_ntoa(tempIP)); printf("IP:   %8x [%s]\n", temp_data, toBeApplyCfg.ip);
             temp_data = ReadReg(R5550RegArea, UPDT_NM);
@@ -314,13 +314,15 @@ void UpdateNetwork(int c, char *ip, char *nm, char *gw, char *dns, int board_pos
     char outBuffer[150];
 
     FILE *file;
-    file = fopen("/tmp/interfaces", "wb");
+    file = fopen("/tmp/interfaces", "wb"
+);
 
-    system("mkdir /mnt/sdcard/etc/\n");
+    //system("mkdir /mnt/sdcard//\n");
     printf("Update and restart interfaces\n");
+
     if (c==0)
     {
-        strcpy(nw_tmp, gw);
+        strcpy(nw_tmp, ip);
         char *array[4];
         int i=0;
         array[i] = strtok (nw_tmp, ".");
@@ -354,6 +356,7 @@ void UpdateNetwork(int c, char *ip, char *nm, char *gw, char *dns, int board_pos
     }
     else
     {
+        fputs("auto eth0\n",file);
         fputs("iface eth0 inet dhcp\n", file);
     }
     //fputs("iface eth1 inet dhcp\n",file);
@@ -377,10 +380,11 @@ void UpdateNetwork(int c, char *ip, char *nm, char *gw, char *dns, int board_pos
     fclose(file);
 
     system("cp /tmp/interfaces /etc/network/interfaces\n");
-    system("cp /tmp/interfaces /mnt/sdcard/etc/interfaces \n");
+    system("cp /tmp/interfaces /mnt/sdcard/interfaces \n");
     system("ifdown eth0 && ifup eth0 &\n");
     system("ifdown eth0:1 && ifup eth0:1 &\n");
     system("ifdown usb0 && ifup usb0 &\n");
+    system("sync\n");
 //    system("ifdown eth0");
 //    system("ifup eth0");
 
