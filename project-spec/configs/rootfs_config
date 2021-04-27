@@ -4132,6 +4132,7 @@ CONFIG_bridge-utils=y
 #
 CONFIG_adcinit=y
 CONFIG_bootscript=y
+CONFIG_clockregeneration=y
 CONFIG_configdaemon=y
 # CONFIG_gpio-demo is not set
 CONFIG_libzmq=y

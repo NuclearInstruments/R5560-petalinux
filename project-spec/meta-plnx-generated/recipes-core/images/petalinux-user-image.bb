@@ -30,6 +30,7 @@ IMAGE_INSTALL = "\
 		bridge-utils \
 		adcinit \
 		bootscript \
+		clockregeneration \
 		configdaemon \
 		libzmq \
 		nibridge \
