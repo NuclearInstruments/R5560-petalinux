@@ -16,7 +16,7 @@ src/image_mover.o src/image_mover.o: ../src/image_mover.c ../src/fsbl.h \
  ../../fsbl_bsp/ps7_cortexa9_0/include/xil_io.h \
  ../../fsbl_bsp/ps7_cortexa9_0/include/xstatus.h \
  ../../fsbl_bsp/ps7_cortexa9_0/include/xil_assert.h ../src/fsbl_debug.h \
- /home/user/petalinux/R5560_2018/R5560/components/plnx_workspace/fsbl/fsbl_hwproj/ps7_init.h \
+ /home/utente/projects/zynq_petalinux/components/plnx_workspace/fsbl/fsbl_hwproj/ps7_init.h \
  ../src/image_mover.h \
  ../../fsbl_bsp/ps7_cortexa9_0/include/xreg_cortexa9.h \
  ../src/fsbl_hooks.h ../src/md5.h \
@@ -62,7 +62,7 @@ src/image_mover.o src/image_mover.o: ../src/image_mover.c ../src/fsbl.h \
 
 ../src/fsbl_debug.h:
 
-/home/user/petalinux/R5560_2018/R5560/components/plnx_workspace/fsbl/fsbl_hwproj/ps7_init.h:
+/home/utente/projects/zynq_petalinux/components/plnx_workspace/fsbl/fsbl_hwproj/ps7_init.h:
 
 ../src/image_mover.h:
 

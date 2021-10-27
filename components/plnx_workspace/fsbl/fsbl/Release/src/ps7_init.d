@@ -1,6 +1,6 @@
 src/ps7_init.o src/ps7_init.o: \
- /home/user/petalinux/R5560_2018/R5560/components/plnx_workspace/fsbl/fsbl_hwproj/ps7_init.c \
- /home/user/petalinux/R5560_2018/R5560/components/plnx_workspace/fsbl/fsbl_hwproj/ps7_init.h \
+ /home/utente/projects/zynq_petalinux/components/plnx_workspace/fsbl/fsbl_hwproj/ps7_init.c \
+ /home/utente/projects/zynq_petalinux/components/plnx_workspace/fsbl/fsbl_hwproj/ps7_init.h \
  ../../fsbl_bsp/ps7_cortexa9_0/include/xil_io.h \
  ../../fsbl_bsp/ps7_cortexa9_0/include/xil_types.h \
  ../../fsbl_bsp/ps7_cortexa9_0/include/xil_printf.h \
@@ -11,7 +11,7 @@ src/ps7_init.o src/ps7_init.o: \
  ../../fsbl_bsp/ps7_cortexa9_0/include/xreg_cortexa9.h \
  ../../fsbl_bsp/ps7_cortexa9_0/include/xpseudo_asm_gcc.h
 
-/home/user/petalinux/R5560_2018/R5560/components/plnx_workspace/fsbl/fsbl_hwproj/ps7_init.h:
+/home/utente/projects/zynq_petalinux/components/plnx_workspace/fsbl/fsbl_hwproj/ps7_init.h:
 
 ../../fsbl_bsp/ps7_cortexa9_0/include/xil_io.h:
 

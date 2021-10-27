@@ -2,6 +2,10 @@
 <?scdStore version="2"?><scannerInfo id="org.eclipse.cdt.make.core.discoveredScannerInfo">
 <instance id="xilinx.gnu.armv7.exe.debug.273839102;xilinx.gnu.armv7.exe.debug.273839102.">
 <collector id="org.eclipse.cdt.make.core.PerProjectSICollector">
+<includePath path="/opt/Xilinx/petalinux/tools/linux-i386/gcc-arm-none-eabi/bin/../lib/gcc/arm-none-eabi/7.2.1/include"/>
+<includePath path="/opt/Xilinx/petalinux/tools/linux-i386/gcc-arm-none-eabi/bin/../lib/gcc/arm-none-eabi/7.2.1/include-fixed"/>
+<includePath path="/opt/Xilinx/petalinux/tools/linux-i386/gcc-arm-none-eabi/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/include"/>
+<includePath path="/opt/Xilinx/petalinux/tools/linux-i386/gcc-arm-none-eabi/bin/../arm-none-eabi/libc/usr/include"/>
 <includePath path="/opt/pkg/petalinux/tools/linux-i386/gcc-arm-none-eabi/bin/../lib/gcc/arm-none-eabi/7.2.1/include"/>
 <includePath path="/opt/pkg/petalinux/tools/linux-i386/gcc-arm-none-eabi/bin/../lib/gcc/arm-none-eabi/7.2.1/include-fixed"/>
 <includePath path="/opt/pkg/petalinux/tools/linux-i386/gcc-arm-none-eabi/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/include"/>
@@ -836,6 +840,10 @@
 </instance>
 <instance id="xilinx.gnu.armv7.exe.debug.273839102;xilinx.gnu.armv7.exe.debug.273839102.;xilinx.gnu.armv7.c.toolchain.compiler.debug.185298594;xilinx.gnu.armv7.c.compiler.input.571687531">
 <collector id="org.eclipse.cdt.make.core.PerProjectSICollector">
+<includePath path="/opt/Xilinx/petalinux/tools/linux-i386/gcc-arm-none-eabi/bin/../lib/gcc/arm-none-eabi/7.2.1/include"/>
+<includePath path="/opt/Xilinx/petalinux/tools/linux-i386/gcc-arm-none-eabi/bin/../lib/gcc/arm-none-eabi/7.2.1/include-fixed"/>
+<includePath path="/opt/Xilinx/petalinux/tools/linux-i386/gcc-arm-none-eabi/bin/../lib/gcc/arm-none-eabi/7.2.1/../../../../arm-none-eabi/include"/>
+<includePath path="/opt/Xilinx/petalinux/tools/linux-i386/gcc-arm-none-eabi/bin/../arm-none-eabi/libc/usr/include"/>
 <includePath path="/opt/pkg/petalinux/tools/linux-i386/gcc-arm-none-eabi/bin/../lib/gcc/arm-none-eabi/7.2.1/include"/>
 <includePath path="/opt/pkg/petalinux/tools/linux-i386/gcc-arm-none-eabi/bin/../lib/gcc/arm-none-eabi/7.2.1/include-fixed"/>
 <includePath path="#undef __ARM_FEATURE_DSP" removed="true"/>

@@ -16,7 +16,7 @@ src/nand.o src/nand.o: ../src/nand.c \
  ../../fsbl_bsp/ps7_cortexa9_0/include/xil_io.h \
  ../../fsbl_bsp/ps7_cortexa9_0/include/xstatus.h \
  ../../fsbl_bsp/ps7_cortexa9_0/include/xil_assert.h ../src/fsbl_debug.h \
- /home/user/petalinux/R5560_2018/R5560/components/plnx_workspace/fsbl/fsbl_hwproj/ps7_init.h
+ /home/utente/projects/zynq_petalinux/components/plnx_workspace/fsbl/fsbl_hwproj/ps7_init.h
 
 ../../fsbl_bsp/ps7_cortexa9_0/include/xparameters.h:
 
@@ -58,4 +58,4 @@ src/nand.o src/nand.o: ../src/nand.c \
 
 ../src/fsbl_debug.h:
 
-/home/user/petalinux/R5560_2018/R5560/components/plnx_workspace/fsbl/fsbl_hwproj/ps7_init.h:
+/home/utente/projects/zynq_petalinux/components/plnx_workspace/fsbl/fsbl_hwproj/ps7_init.h:

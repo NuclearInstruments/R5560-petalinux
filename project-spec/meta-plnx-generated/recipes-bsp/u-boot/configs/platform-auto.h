@@ -34,7 +34,7 @@
 #define CONFIG_MII
 #define CONFIG_NET_MULTI
 #define CONFIG_NETCONSOLE	1
-#define CONFIG_SERVERIP	10.0.2.15
+#define CONFIG_SERVERIP	172.17.0.5
 #define CONFIG_IPADDR
 
 /* spi_flash - ps7_qspi_0 */

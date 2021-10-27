@@ -29,7 +29,8 @@
 *
 */
 
-#define ADC_CAL_BA 			0x4FFF0000
+#define SYS_CLK_CONTROLLER 			0x43C20000
+#define ADC_CAL_BA 			        0x4FFF0000
 #define ADC_CAL_REG_DELAY		0x0
 #define ADC_CAL_REG_CFG			0x4
 #define ADC_CAL_REG_CHSEL		0xC
@@ -125,6 +126,7 @@ void ONValidFWLedOK();
 
 int fd;
 
+
 int main(int argc, char **argv)
 {
     int old_value;
@@ -209,26 +211,44 @@ int main(int argc, char **argv)
             ReadReg(fd, 0x43c00010, &check2);            
             if (check2==0xABBA0000)
             {
-                    ONCalibLedKO();            
+                
+                ONCalibLedKO();            
             }
             else
             {
                 if (check2==0xABBA1234)
                 {
+                    
                     ONCalibLedOK();
                 }
                 else
                 {
+                    __PRINT_LOG("SWAP TO INTERNAL CLOCK\n\r");
+                    WriteReg(fd, SYS_CLK_CONTROLLER + 0x3c, 0);
                     if (ADCCalibration()==0)            
                         WriteReg(fd, 0x43c00010, 0xABBA1234);                            
                     else
-                        WriteReg(fd, 0x43c00010, 0xABBA0000);                            
+                        WriteReg(fd, 0x43c00010, 0xABBA0000);     
+                    
+                    __PRINT_LOG("\n\rSWAP TO SYSTEM CLOCK\n\r");	    
+                    //SWAP CLOCK SOURCE
+                    ReadReg(fd, SYS_CLK_CONTROLLER + 0x3c, &check1);
+                    check1 = check1 >> 4 &0x1;
+                    if (check1 == 0)
+                    {
+                      __PRINT_LOG("EXTERNAL CLOCK IS GOOD. SWAP OK\n\r");
+                      WriteReg(fd, SYS_CLK_CONTROLLER + 0x3c, 1);
+                    } else {
+                      __PRINT_LOG("NO EXTERNAL CLOCK. SWAP KO\n\r");
+                      WriteReg(fd, SYS_CLK_CONTROLLER + 0x3c, 0);  
+                    }
                 }
             }
         }
         else
         {
-            ONValidFWLedKO();
+           
+           ONValidFWLedKO();
         }
 
         usleep(100000);
@@ -397,12 +417,12 @@ int  PerformTestRamp(int fd, int channel)
 
 		if (i%32)
 		{
-			__PRINT_LOG("Progress: %3.2f%%\r",i/16384.0*100.0);
+			//__PRINT_LOG("Progress: %3.2f%%\r",i/16384.0*100.0);
 			fflush(stdout);
 		}
 		if(err_cnt>0)
 		{
-			__PRINT_LOG("\n\rRAMP: %2d %4X[%4X] %d\n\r",channel, i, dato, err_cnt);	
+			//__PRINT_LOG("\n\rRAMP: %2d %4X[%4X] %d\n\r",channel, i, dato, err_cnt);	
 			TR++;
 		}
 	}
@@ -522,11 +542,11 @@ AlgndCNTERR:
 					ScanWin[i] = err_cnt;
 					data=ReadData(fd, ab);	
 					//__PRINT_LOG("    -> %2d    %d\n",i,err_cnt);
-					__PRINT_LOG("[->] CH: %2d%s Delay: %d Error: %6d Code:%2X                      \r",ch_sel, ab==0?"A":"B", i, err_cnt, data);
+					//__PRINT_LOG("[->] CH: %2d%s Delay: %d Error: %6d Code:%2X                      \r",ch_sel, ab==0?"A":"B", i, err_cnt, data);
 					fflush(stdout);
 				}
 			
-				__PRINT_LOG("\n0|");				
+				//__PRINT_LOG("\n0|");				
 				int lstartM=0;
 				int lendM=0;
 				int lw=0;
@@ -535,10 +555,10 @@ AlgndCNTERR:
 				bool llb = false;
 				for (i=0;i<32;i++)
 				{
-					if (i==15)__PRINT_LOG(" ");
+					//if (i==15)__PRINT_LOG(" ");
 					if (ScanWin[i]==0)
 					{
-						__PRINT_LOG(".");
+						//__PRINT_LOG(".");
 						if (llb==false)
 						{
 							llstart=i;
@@ -550,7 +570,7 @@ AlgndCNTERR:
 					}
 					else
 					{
-						__PRINT_LOG("#");
+						//__PRINT_LOG("#");
 						if (llb==true)
 						{
 							if (llw>lw)
@@ -574,7 +594,7 @@ AlgndCNTERR:
 					}
 				}
 
-				__PRINT_LOG("|31\n");				
+				//__PRINT_LOG("|31\n");				
 
 			if (lendM - lstartM>10)
 			{
@@ -598,7 +618,7 @@ AlgndCNTERR:
 
 				if (channelLockedBit[(ch_sel*2)+ab] == false)
 				{
-					__PRINT_LOG ("   --> [%x] --> delay found: %2d    error@delay: %8d  [MIN:%2d   MAX:%2d    W:%2d]\n",delay,err_cnt, lstartM,lendM,lw);
+					//__PRINT_LOG ("   --> [%x] --> delay found: %2d    error@delay: %8d  [MIN:%2d   MAX:%2d    W:%2d]\n",delay,err_cnt, lstartM,lendM,lw);
 
 					if (try < 5)
 					{
@@ -609,7 +629,7 @@ AlgndCNTERR:
 
 				
 
-			__PRINT_LOG("CH: %2d%s Delay: %d LOCKED: %s  [MIN:%2d   MAX:%2d    W:%2d]                           \r\n",ch_sel, ab==0?"A":"B", delay, channelLockedBit[(ch_sel*2)+ab]?"Y":"F",lstartM,lendM,lw);
+			//__PRINT_LOG("CH: %2d%s Delay: %d LOCKED: %s  [MIN:%2d   MAX:%2d    W:%2d]                           \r\n",ch_sel, ab==0?"A":"B", delay, channelLockedBit[(ch_sel*2)+ab]?"Y":"F",lstartM,lendM,lw);
 
 		}
 		}
@@ -647,7 +667,7 @@ AlgndCNTERR:
 				DoBitslip(fd);
 				err_cnt = countErrors(fd, ab, 1);//countAlignError(fd, ab);	
 				data=ReadData(fd, ab);	
-				__PRINT_LOG("[B] CH: %2d%s Bitslip: %d CODE: %2X                      \r",ch_sel, ab==0?"A":"B", i, data);
+				//__PRINT_LOG("[B] CH: %2d%s Bitslip: %d CODE: %2X                      \r",ch_sel, ab==0?"A":"B", i, data);
 				fflush(stdout);
 
 				if (err_cnt==0)
@@ -660,7 +680,7 @@ AlgndCNTERR:
 			if(channelAlligned[(ch_sel*2)+ab] ==false)
 				notAllignedCNT++;
 
-			__PRINT_LOG("\n[B] CH: %2d%s BITSLIP: %d ALLIGNED: %s\r\n",ch_sel, ab==0?"A":"B", channelBitslipN[(ch_sel*2)+ab], channelAlligned[(ch_sel*2)+ab] == true ? "Y":"N");
+			//__PRINT_LOG("\n[B] CH: %2d%s BITSLIP: %d ALLIGNED: %s\r\n",ch_sel, ab==0?"A":"B", channelBitslipN[(ch_sel*2)+ab], channelAlligned[(ch_sel*2)+ab] == true ? "Y":"N");
 
 		}
 
