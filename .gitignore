@@ -8,5 +8,6 @@ pre-built/linux/
 *.o
 *.jou
 *.log
+*.rsys
 #project-spec/meta-plnx-generated/
 #/components/plnx_workspace
