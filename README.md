@@ -43,6 +43,32 @@ The Caen/NI open hardware upgrade tool allows to automate the upgrade process of
 In order to generate an upgrade packet from a just build petalinux system run the sript generate_rsys.sh that is present in the repo main folder.
 You fill find and rsus file called R5550_Upgrade_2021-11-30.rsys that is a zip that the Caen/NI open hardware upgrade tool can process and manage
 
+# meta-user
+The user define application are place in project-spec/meta-user/recipes-apps
+To create new application follow the user guide
+https://www.xilinx.com/support/documentation/sw_manuals/xilinx2018_1/ug1144-petalinux-tools-reference-guide.pdf
+
+# Compile application without petalinux
+It is possible to generate a sdk file with the cross compile tools
+1) source petalinux
+2) enter petalinux-build --sdk
+3) in images/linux folder you will finda a sdk.sh file
+4) copy this file to any linux machine and execute it.
+5) source the sdk enviromental setup script form sdk install folder before compile your exacutables
+
+
+# Boot script
+In project-spec/meta-user/recipes-apps/bootscript/files/ we placed ad boot script that is executed ad system startup
+
+The script loads all drivers and daemon required to startup the device and interface by Nuclear Instruments SDK and SciCompiler.
+
+The script also check for two user defined script:
+* /mnt/sdcard/startup.sh -> executed before the user firmware il loaded on the FPGA
+* /mnt/sdcard/startup_post.sh -> after the user firmware il loaded on the FPGA but before the adc are initialized and before the nuclear instruments daemons are loaded
+
+For example on the R5560-B a jitter cleaner Si5324 in present and a daemon _clockgeneration_ should be loaded in order to startup it correctly.
+This executable is present inside this repo but is not automatically loaded. It should be loaded using the startup_post.sh because it requires that the FPGA firmware is already loaded in the system
+Otherwise it is possible to edit the mystartup script to locate accurately the position in the boot sequence where to load a particular daemon. In that case it will be necessary to rebuild the Petalinux image and upgrade the R5560
 
 
 
