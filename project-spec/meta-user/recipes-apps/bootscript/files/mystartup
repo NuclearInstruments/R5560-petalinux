@@ -16,6 +16,7 @@ echo Nuclear Instruments R5560 Startup
 S=/mnt/sdcard
 D=/etc/yourapplication
 C=startup.sh
+P=startup_post.sh
 
 if [ "$1" != "start" ]; then
     exit 0
@@ -103,6 +104,13 @@ then
     fi
 
 
+	if [ -f ${S}/${P} ]; then
+		echo "Running startup post FPGA programmed script"
+		cp ${S}/${P} ${D}/${P}
+		source ${D}/${P}
+	else
+		echo "No startup post FPGA script file found"
+	fi
     # set hostname again, in case it changed
     #/etc/init.d/hostname.sh
 

@@ -54,6 +54,8 @@
 #include <signal.h>
 #include <syslog.h>
 
+#include <inttypes.h>
+#include <math.h>
 
 #ifdef DAEMON_MODE
 #define __PRINT_LOG(...) syslog (LOG_NOTICE,__VA_ARGS__)
@@ -259,6 +261,16 @@ uint8_t sts_SI5324 [] = {
     131,
     132
 };
+
+uint8_t sts_SI570 [] = {
+    0xAD,
+    0x42,
+    0xA8,
+    0x67,
+    0x7d,
+    0x17
+};
+
 int main () {
 
     int old_value;
@@ -331,8 +343,154 @@ int main () {
         printf("Unable to open i2c-0 device. DCRM Daemon die\n");
         return -2;
     }
+   
+/*******************************************************************************************/
+/* ESS Clock Configuration Code */
+
+// TODO:
+//  1) rewrite as functions
+//  2) remove register magic numbers
+//  3) run on start-up
+//  4) integrate into CAEN flow
+
+    __PRINT_LOG("ESS: Configuring NI300 clocks...\n");
+    __PRINT_LOG("Reset control registers...\n");
+
+    WriteReg(R5550RegArea, 0x03FFFFF1, 0x0);
+    WriteReg(R5550RegArea, 0x03FFFFF2, 0x0);
+
+
+/*******************************************************************************************/
+/* Program SI570 */
+
+    /* Reset SI570 (important to ensure consistent behaviour each time script is run) */
+    iicSiWrite(ADDRESS_SI570, 135, 1);
+    WriteReg(R5550RegArea, 0x03FFFFF2, 0x10000000);
+
+    /* Get SI570 status registers */
+    int base_addr = 13;
+    for(int i=0; i<6; i++) {
+  	sts_SI570[i] = iicSiRead(ADDRESS_SI570, base_addr+i);
+        __PRINT_LOG("Read: device [%2x]    address: %3d, data: %2x\n", ADDRESS_SI570, base_addr+i, sts_SI570[i]); 
+    }
+
+    /* Calculate new SI570 registers (see SI570 user guide for procedure) */
+    int hs_div = ((sts_SI570[0] >> 5) & 0x07);
+    hs_div = hs_div + 4;
+    __PRINT_LOG("HS_DIV value is %d\n", hs_div);
     
-    
+    int n1 = ((sts_SI570[0] & 0x1f) << 2) + ((sts_SI570[1] & 0xc0) >> 6);
+    n1 = n1 + (n1%2);
+    __PRINT_LOG("N1 value is %d\n", n1);
+
+    double f0 = 10.0; // MHz
+
+    uint64_t rfreq_r = 0;
+    rfreq_r = (uint64_t)(sts_SI570[1] & 0x3f) << 32L;
+    for(int i=0; i<4; i++) {
+        rfreq_r = rfreq_r + ((uint64_t)sts_SI570[5 - i] << i*8L);
+        //__PRINT_LOG("F0 is %" PRIx64 "\n", f0);
+    }
+    __PRINT_LOG("F0 is %" PRIx64 "\n", rfreq_r);
+
+    double rfreq = 0;
+    rfreq = (double)rfreq_r/(double)(1LL<<28LL);
+    __PRINT_LOG("rfreq is %f\n", rfreq);
+
+    double fxtal = 0;
+    fxtal = (double)n1*(double)hs_div*(double)f0/rfreq;
+    __PRINT_LOG("fxtal is %f\n", fxtal);
+
+    double f1 = 158.4945;
+    int hs_div_f1 = 4;
+    int n1_f1 = 8;
+ 
+    double fdco = f1*hs_div_f1*n1_f1;
+    __PRINT_LOG("fdco is %f\n", fdco);
+
+    double rfreq_f1 = fdco/fxtal;
+    __PRINT_LOG("rfreq_f1 is %f\n", rfreq_f1);
+
+    double rfreq_f1_x = (rfreq_f1 * (double)(1LL << 28LL));
+    uint64_t rfreq_f1_r = (uint64_t)(rfreq_f1_x + 0.5);
+   
+    __PRINT_LOG("n1 is %d %d\n", n1_f1, (n1_f1-1)>>2);  
+    cfg_SI570[2*1+1] = ((hs_div_f1-4) << 5) + ((n1_f1-1) >> 2);
+    cfg_SI570[2*2+1] = (((n1_f1-1) & 0x3) << 6) + (rfreq_f1_r >> 32LL);
+
+    for(int i = 0; i < 4; i++) {
+        cfg_SI570[2*i+6+1] = (rfreq_f1_r >> 8LL*(3-i)) & 0xffLL;
+    }
+
+    for(int i = 0; i < 9; i++) {
+        __PRINT_LOG("Writing: device [%2x]   address: %3d, data:%2x\n", ADDRESS_SI570, cfg_SI570[i*2], cfg_SI570[(i*2)+1]);
+        iicSiWrite(ADDRESS_SI570, cfg_SI570[i*2], cfg_SI570[(i*2)+1]);
+        usleep(1000);
+    }
+    __PRINT_LOG("SI570 programmed. Now sleep for 1 second to allow changes to take effect (todo: quantify)...");
+    WriteReg(R5550RegArea, 0x03FFFFF2, 0x20000000);
+    usleep(1000000);
+
+/***************************************************************************************/
+/* Reset FEA logic */
+    __PRINT_LOG("Resetting fea logic (REG_RX_REF_DONE_WR)...\n");
+    WriteReg(R5550RegArea, 0x03FFFFF1, 0x1);
+    WriteReg(R5550RegArea, 0x03FFFFF1, 0x0);
+    WriteReg(R5550RegArea, 0x03FFFFF2, 0x30000000);
+    usleep(1000000);
+
+/***************************************************************************************/
+/* Wait for NI300 to recover GT clock and forward to jitter cleaner                    */
+
+    int rx_rec_vld = 0;
+    __PRINT_LOG("Waiting for REG_RX_REC_VLD_RD...\n");
+    rx_rec_vld = ReadReg(R5550RegArea, 0x03FFFFF0);
+    __PRINT_LOG("Initial value is %d\n", rx_rec_vld);
+    do {
+        rx_rec_vld = ReadReg(R5550RegArea, 0x03FFFFF0);
+    } while(rx_rec_vld == 0);
+    __PRINT_LOG("rx_rec_vld received from addr 0x03FFFFF0: %d\n", rx_rec_vld);
+    WriteReg(R5550RegArea, 0x03FFFFF2, 0x40000000);
+    usleep(100000);
+
+/**************************************************************************************/
+/* Program SI5342 jitter cleaner */
+
+    // reset SI5324
+    __PRINT_LOG("Resetting SI5324\n");
+    iicSiWrite(ADDRESS_SI5324, 136, 0x80);
+    usleep(1000000);
+
+    __PRINT_LOG("\n\nConfiguring the SI5324 device\nESS: configuring SI5324 jitter cleaner to 158.4945 MHz.\n");
+    for (int i =0; i<43; i++) {
+        __PRINT_LOG("Writing: device [%2x]   address: %3d, data:%2x\n", ADDRESS_SI5324, cfg_SI5324[i*2], cfg_SI5324[(i*2)+1]);
+        iicSiWrite(ADDRESS_SI5324, cfg_SI5324[i*2], cfg_SI5324[(i*2)+1]);   
+    }    
+    usleep(100000);
+    WriteReg(R5550RegArea, 0x03FFFFF2, 0x50000000);
+
+    int reg_lol = 0;
+    __PRINT_LOG("Poll SI5324 until locked\n");
+    do {
+        reg_lol = (iicSiRead(ADDRESS_SI5324, 130)) & 0x01;
+    } while (reg_lol == 0);
+    __PRINT_LOG("SI5324 locked\n");
+    WriteReg(R5550RegArea, 0x03FFFFF2, 0x60000000);
+
+
+/**************************************************************************************/
+/* Tell fea logic that the jitter cleaner has been programmed...                      */
+    __PRINT_LOG("Tell fea logic that the jitter cleaner has been programmed (REG_TX_JC_DONE_WR)...\n");
+    WriteReg(R5550RegArea, 0x03FFFFF2, 0x70000001);
+    usleep(1000000);
+
+/**************************************************************************************/
+    __PRINT_LOG("NI300 clocks configured successfully.\n");
+
+
+/* Legacy example code provided by AA */
+
+/*    
     __PRINT_LOG("Configuring the SI570 device\nESS: programming SI570 via I2C...");
     for (int i =0; i<9; i++) {
         __PRINT_LOG("Writing: device [%2x]   address: %3d, data:%2x\n", ADDRESS_SI570, cfg_SI570[i*2], cfg_SI570[(i*2)+1]);
@@ -347,7 +505,9 @@ int main () {
         iicSiWrite(ADDRESS_SI5324, cfg_SI5324[i*2], cfg_SI5324[(i*2)+1]);   
     }    
     usleep(100000);
-    
+ */
+
+/*   
     while(1) {
         uint32_t data;
         __PRINT_LOG("ESS: getting SI5324 jitter cleaner status.\n");
@@ -360,7 +520,7 @@ int main () {
         
         usleep(250000);
     }
-    
+ */   
     
     return 0;
 }
